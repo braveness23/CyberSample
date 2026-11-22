@@ -16,6 +16,13 @@ jobs:
       - uses: actions/checkout@v4
       - run: ci/scrub-check.sh
 
+  dsp-tests:
+    name: DSP unit tests (host gcc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: tests/run.sh
+
   build:
     name: build CYBR160.PRG (Hatari + Lattice C 5.60)
     needs: scrub

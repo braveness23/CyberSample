@@ -52,6 +52,7 @@ src/        program source, Lattice project file (CYBR160.PRJ), WERCS resource f
 docs/       porting notes, WAV import notes, CI notes, original 1993 documents (docs/history)
 patches/    diffs of every change made to the 1993 sources
 ci/         headless build: build.sh, project->command-file generator, the RUNCMD helper (source + built .TOS)
+tests/      host-side DSP unit tests (tests/run.sh: gcc only, runs on the code extracted from src/EDIT.C)
 attic/      scratch files from the original source tree, kept for history
 ```
 
