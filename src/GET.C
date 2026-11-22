@@ -247,6 +247,7 @@ hndl_send( SD_HEADER *samp )
 	static short format = SEND_12;
 	STND_HEADER h;
 	short bits;
+	long words;
 
 	deselect_tree( SEND );
 
@@ -273,7 +274,8 @@ hndl_send( SD_HEADER *samp )
 	}
 
 	bits = ( format == SEND_16 ) ? 16 : 12;
-	pack_header( &h, samp, bits );
+	words = ( trunc_to_loop && samp->Loop1End > 0 ) ? samp->Loop1End : samp->SampLength;	// what transmit_stnd_data will send
+	pack_header( &h, samp, bits, words );
 	FLUSH_MIDI_BUFFER;
 	Midiws( 20, (char *)&h );
 	transmit_stnd_data( samp, trunc_to_loop, bits );
@@ -354,7 +356,7 @@ transmit_stnd_data( SD_HEADER *samp, short truncate, short bits )
 }
 
 void
-pack_header( STND_HEADER *h, SD_HEADER *samp, short bits )
+pack_header( STND_HEADER *h, SD_HEADER *samp, short bits, long length )
 {
 	memcpy( h, &default_stnd_header, sizeof( STND_HEADER ) );
 	h->channel = device;
@@ -365,9 +367,9 @@ pack_header( STND_HEADER *h, SD_HEADER *samp, short bits )
 	h->s_rate_l = 		(char)( ( samp->SampPeriod 		 )	& 0x7f );
 	h->s_rate_m = 		(char)( ( samp->SampPeriod >> 7  ) 	& 0x7f );
 	h->s_rate_h = 		(char)( ( samp->SampPeriod >> 14 ) 	& 0x7f );
-	h->s_length_l =		(char)( ( samp->SampLength 		 )	& 0x7f );
-	h->s_length_m =		(char)( ( samp->SampLength >> 7  ) 	& 0x7f );
-	h->s_length_h =		(char)( ( samp->SampLength >> 14 ) 	& 0x7f );
+	h->s_length_l =		(char)( ( length 		 )	& 0x7f );		// the number of words that will follow
+	h->s_length_m =		(char)( ( length >> 7  ) 	& 0x7f );
+	h->s_length_h =		(char)( ( length >> 14 ) 	& 0x7f );
 
 	if( ( samp->Loop1Start >= 0 ) && ( samp->Loop1End >= 0 ) ) {
 		h->l_start_l = 	(char)(   samp->Loop1Start 			& 0x7f );

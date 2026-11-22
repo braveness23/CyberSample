@@ -21,4 +21,5 @@ short transmit_stnd_data(SD_HEADER *samp,
                          short bits);
 void pack_header(STND_HEADER *h,
                  SD_HEADER *samp,
-                 short bits);
+                 short bits,
+                 long length);
