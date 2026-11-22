@@ -124,7 +124,7 @@ typedef struct{
 
 //			name					   byte offset  	default value
 
-	short	header_size;			// 0				1136
+	short	header_size;			// 0				1336
 	short	Version; 				// 2				11
 	short	Preview; 				// 4				0
 	char	aa[40]; 				// unused			/0
@@ -192,6 +192,9 @@ typedef struct{
 	char	Loop2Type;				// 1333				1
 	char	oo[2];					// unused			\0
 }SD_HEADER;
+
+/* compile-time check: the on-disk .SD header is exactly 1336 bytes (array size is -1, an error, if not) */
+typedef char sd_header_size_check[ ( sizeof( SD_HEADER ) == 1336 ) ? 1 : -1 ];
 
 typedef struct {
 			char 	sysex,
