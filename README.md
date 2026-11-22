@@ -54,6 +54,7 @@ patches/    diffs of every change made to the 1993 sources
 ci/         headless build: build.sh, project->command-file generator, the RUNCMD helper (source + built .TOS)
 tests/      host-side unit tests (tests/run.sh: gcc only): DSP routines and Cut/Copy, run on code extracted from src/
 tests/midi/ MIDI loopback test: the real program in Hatari talking SDS to a virtual sampler (docs/midi-loopback.md)
+tests/ui/   emulator GUI tests (smoke, per-slot Undo) and the shared Hatari/xdotool toolbox - see docs/testing.md
 attic/      scratch files from the original source tree, kept for history
 ```
 

@@ -4,3 +4,4 @@ ci/.cache/
 *.O
 *.PRG
 !ci/runcmd/RUNCMD.TOS
+__pycache__/
