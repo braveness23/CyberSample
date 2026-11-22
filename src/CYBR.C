@@ -68,7 +68,7 @@ mode_1( void )
 	int event;
 	short mousex, mousey, button, shiftkey, keycode, clicked, msg[8], mode = M_MODE_1;
 
-	menu_bar( MENU, TRUE );
+	menu_bar( CYBMENU, TRUE );
 
 	if( ! wind_create_open( &g, disp ) ) return M_QUIT;
 	
@@ -136,7 +136,7 @@ mode_1( void )
 					}
 					break;
 				case MN_SELECTED :
-					if( msg[3] ) menu_tnormal( MENU, msg[3], FALSE );	// highlight menubar only if msg[3] != 0
+					if( msg[3] ) menu_tnormal( CYBMENU, msg[3], FALSE );	// highlight menubar only if msg[3] != 0
 					switch( msg[4] ) {
 						case MN_ABOUT : form_alert( 1, ALERT_ABOUT );	break;
 						case MN_OPEN :
@@ -247,7 +247,7 @@ mode_1( void )
 						default :
 							break;
 					}
-					if( msg[3] ) menu_tnormal( MENU, msg[3], TRUE );			// 'un-highlight' the menubar only if msg[3] != 0
+					if( msg[3] ) menu_tnormal( CYBMENU, msg[3], TRUE );			// 'un-highlight' the menubar only if msg[3] != 0
 					break;
 				default :
 					break;
@@ -446,7 +446,7 @@ mode_1( void )
 	} while( mode == M_MODE_1 );															//	THIS IS THE END OF THE MAIN LOOP
 
 	wind_close_delete( &g );
-	menu_bar( MENU, FALSE );
+	menu_bar( CYBMENU, FALSE );
 
 	return mode;
 }
@@ -459,51 +459,51 @@ enable_check_menu( void )
 	wind_update( BEG_UPDATE );	// Borrow control from AES
 
 	for( z = MN_SMPL1; z < MN_PASTE_BUF + 1; z++ ) {	// 'uncheck' each sample number
-		if( MENU[ z ].ob_state & CHECKED )
-			menu_icheck( MENU, z, FALSE );
+		if( CYBMENU[ z ].ob_state & CHECKED )
+			menu_icheck( CYBMENU, z, FALSE );
 	}
-	menu_icheck( MENU, MN_SMPL1 + smp_no, TRUE );	// 'check' the current sample number
+	menu_icheck( CYBMENU, MN_SMPL1 + smp_no, TRUE );	// 'check' the current sample number
 
 	edit_flag 	= edit_length(t) 	? TRUE : FALSE;
 	sample_flag = sample_length(t) 	? TRUE : FALSE;
 	paste_flag 	= sample_length(p) 	? TRUE : FALSE;
 	undo_flag 	= sample_length(u) 	? TRUE : FALSE;
 
-	menu_ienable( MENU, MN_SAVE,			sample_flag );
-	menu_ienable( MENU, MN_SEND,			sample_flag );
-	menu_ienable( MENU, MN_UNDO,			undo_flag );
-	menu_ienable( MENU, MN_CUT,				edit_flag );
-	menu_ienable( MENU, MN_COPY,			edit_flag );
-	menu_ienable( MENU, MN_CLEAR,			edit_flag );
-	menu_ienable( MENU, MN_TRIM,			edit_flag );
-	menu_ienable( MENU, MN_PASTE,			paste_flag );
-	menu_ienable( MENU, MN_SELECT_ALL,		sample_flag );
-	menu_ienable( MENU, MN_TRUNCATE,		edit_flag );
-	menu_ienable( MENU, MN_INVERT,			edit_flag );
-	menu_ienable( MENU, MN_NORMALIZE,		edit_flag );
-	menu_ienable( MENU, MN_UP_6DB,			edit_flag );
-	menu_ienable( MENU, MN_DOWN_6DB,		edit_flag );
-	menu_ienable( MENU, MN_REVERSE, 		edit_flag );
-	menu_ienable( MENU, MN_ZERO,			edit_flag );
-	menu_ienable( MENU, MN_MIRAGE,			edit_flag );
-	menu_ienable( MENU, MN_FADE,			edit_flag );
-	menu_ienable( MENU, MN_SMOOTHING,		edit_flag );
-	menu_ienable( MENU, MN_COMPRESS,		edit_flag );
-	menu_ienable( MENU, MN_GATE,			edit_flag );
-	menu_ienable( MENU, MN_BANDPASS,		edit_flag );
-	menu_ienable( MENU, MN_LOWPASS,			edit_flag );
-	menu_ienable( MENU, MN_HIGHPASS,		edit_flag );
-	menu_ienable( MENU, MN_VIEW_ALL,		sample_flag );
-	menu_icheck ( MENU, MN_MIDITHRU,		midithru_flag );
-	menu_icheck ( MENU, MN_LOOP_OFF,		t->Loop1Type == 0 );
-	menu_icheck ( MENU, MN_LOOP_FWD,		t->Loop1Type == 1 );
-	menu_icheck ( MENU, MN_LOOP_REV,		t->Loop1Type == 2 );
-	sprintf( MENU[MN_LOOP_START].ob_spec, "  Loop Start: %ld", t->Loop1Start );
-	sprintf( MENU[MN_LOOP_END  ].ob_spec, "  Loop End  : %ld", t->Loop1End );
-	sprintf( MENU[MN_EDIT_START].ob_spec,  "  Start:% ld", t->EditStart );
-	sprintf( MENU[MN_EDIT_END  ].ob_spec,  "  End  :% ld", t->EditEnd );
-	sprintf( MENU[MN_SAMP_RATE ].ob_spec,  "  Rate: %ld Hz...", t->SampRate );
-	sprintf( MENU[MN_SAMP_LENGTH].ob_spec, "  Length: %ld", t->SampLength );
+	menu_ienable( CYBMENU, MN_SAVE,			sample_flag );
+	menu_ienable( CYBMENU, MN_SEND,			sample_flag );
+	menu_ienable( CYBMENU, MN_UNDO,			undo_flag );
+	menu_ienable( CYBMENU, MN_CUT,				edit_flag );
+	menu_ienable( CYBMENU, MN_COPY,			edit_flag );
+	menu_ienable( CYBMENU, MN_CLEAR,			edit_flag );
+	menu_ienable( CYBMENU, MN_TRIM,			edit_flag );
+	menu_ienable( CYBMENU, MN_PASTE,			paste_flag );
+	menu_ienable( CYBMENU, MN_SELECT_ALL,		sample_flag );
+	menu_ienable( CYBMENU, MN_TRUNCATE,		edit_flag );
+	menu_ienable( CYBMENU, MN_INVERT,			edit_flag );
+	menu_ienable( CYBMENU, MN_NORMALIZE,		edit_flag );
+	menu_ienable( CYBMENU, MN_UP_6DB,			edit_flag );
+	menu_ienable( CYBMENU, MN_DOWN_6DB,		edit_flag );
+	menu_ienable( CYBMENU, MN_REVERSE, 		edit_flag );
+	menu_ienable( CYBMENU, MN_ZERO,			edit_flag );
+	menu_ienable( CYBMENU, MN_MIRAGE,			edit_flag );
+	menu_ienable( CYBMENU, MN_FADE,			edit_flag );
+	menu_ienable( CYBMENU, MN_SMOOTHING,		edit_flag );
+	menu_ienable( CYBMENU, MN_COMPRESS,		edit_flag );
+	menu_ienable( CYBMENU, MN_GATE,			edit_flag );
+	menu_ienable( CYBMENU, MN_BANDPASS,		edit_flag );
+	menu_ienable( CYBMENU, MN_LOWPASS,			edit_flag );
+	menu_ienable( CYBMENU, MN_HIGHPASS,		edit_flag );
+	menu_ienable( CYBMENU, MN_VIEW_ALL,		sample_flag );
+	menu_icheck ( CYBMENU, MN_MIDITHRU,		midithru_flag );
+	menu_icheck ( CYBMENU, MN_LOOP_OFF,		t->Loop1Type == 0 );
+	menu_icheck ( CYBMENU, MN_LOOP_FWD,		t->Loop1Type == 1 );
+	menu_icheck ( CYBMENU, MN_LOOP_REV,		t->Loop1Type == 2 );
+	sprintf( CYBMENU[MN_LOOP_START].ob_spec, "  Loop Start: %ld", t->Loop1Start );
+	sprintf( CYBMENU[MN_LOOP_END  ].ob_spec, "  Loop End  : %ld", t->Loop1End );
+	sprintf( CYBMENU[MN_EDIT_START].ob_spec,  "  Start:% ld", t->EditStart );
+	sprintf( CYBMENU[MN_EDIT_END  ].ob_spec,  "  End  :% ld", t->EditEnd );
+	sprintf( CYBMENU[MN_SAMP_RATE ].ob_spec,  "  Rate: %ld Hz...", t->SampRate );
+	sprintf( CYBMENU[MN_SAMP_LENGTH].ob_spec, "  Length: %ld", t->SampLength );
 
 
 	wind_update( END_UPDATE );	// Return control to AES

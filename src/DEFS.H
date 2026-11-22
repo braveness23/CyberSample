@@ -360,3 +360,17 @@ extern short note_velocity[3];
 
 #endif	/* end of #ifdef CYBERSAMPLE 				*/
 
+
+/* --- Lattice C 5.60 compatibility shims (added 2026-11-19; original in DEFS.H.orig-1993) --- */
+/* old-style GRECT element-pointer macro, absent from 5.60 AES.H */
+#ifndef ELTX
+#define ELTX(r) &(r)->g_x, &(r)->g_y, &(r)->g_w, &(r)->g_h
+#endif
+#ifndef PTRX
+#define PTRX(r) &(*(r))->g_x, &(*(r))->g_y, &(*(r))->g_w, &(*(r))->g_h
+#endif
+/* old-style accessor: text pointer of a TEDINFO object in a tree */
+#ifndef TED_PTEXT
+#define TED_PTEXT(tree,obj) (((TEDINFO *)((tree)[obj].ob_spec))->te_ptext)
+#endif
+/* MENU renamed CYBMENU in CYBR.C/CYBRWERK.C/CYBRWERK.H (clashes with 5.60 AES.H typedef) */

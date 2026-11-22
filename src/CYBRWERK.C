@@ -121,7 +121,7 @@ OBJECT PASTE[] = {
 /*15*/	{0,-1,-1,G_TEXT,0x20,0x0,&rs_tedinfo[8],18,3,7,1},
 };
 
-OBJECT MENU[] = {
+OBJECT CYBMENU[] = {
 /*0*/	{-1,1,11,G_IBOX,0x0,0x0,(void *)0x0,0,0,160,25},
 /*1*/	{11,2,2,G_BOX,0x0,0x0,(void *)0x1100,0,0,160,513},
 /*2*/	{1,3,10,G_IBOX,0x0,0x0,(void *)0x0,2,0,60,769},
@@ -451,7 +451,7 @@ OBJECT HLP[] = {
 
 
 char ALERT_QUIT[] = "[1][Sure you want to quit\?][QUIT|Go Back!]";
-char ALERT_ABOUT[] = "[1][CyberSample v.159|Copyright 1993|David Schwinn][OK]";
+char ALERT_ABOUT[] = "[1][CyberSample v.159|Copyright 1993|braveness23  ][OK]";
 char ALERT_MEMORY[] = "[3][There is not enough memory|for this operation...][ OK ]";
 char ALERT_NSUPPORT[] = "[0][ This Format Not Supported ][ Darn ]";
 char ALERT_NOEDIT[] = "[1][No Edit Region has been define][OK]";
@@ -474,7 +474,7 @@ void rsrc_init(void)
 {
 	fix_tree(DISPMONO,25);
 	fix_tree(PASTE,15);
-	fix_tree(MENU,92);
+	fix_tree(CYBMENU,92);
 	fix_tree(CHANGERATE,4);
 	fix_tree(ICONS,2);
 	fix_tree(STATUS,7);

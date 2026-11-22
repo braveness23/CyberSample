@@ -30,7 +30,7 @@ extern OBJECT PASTE[];
 #define PASTE_TIMES 11
 #define PASTE_LOCATION 13
 #define PASTE_BUF_LENGTH 15
-extern OBJECT MENU[];
+extern OBJECT CYBMENU[];
 #define MN_DESK 3
 #define MN_FILE 4
 #define MN_EDIT 5
