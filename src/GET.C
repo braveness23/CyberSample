@@ -56,10 +56,10 @@ void hndl_get( SD_HEADER *samp )
 			graf_mouse( HOURGLASS, 0L );
 			if( freeze_mouse ) mouse_control( TRUE );
 			switch( h->s_format ) {
-				case 8: case 9: case 10: case 12: case 13: case 14:
+				case 8: case 9: case 10: case 11: case 12: case 13: case 14:
 					receive_stnd_data( samp, 60 );
 					break;
-				case 15: case 16: case 17: case 18: case 19: case 20:
+				case 15: case 16: case 17: case 18: case 19: case 20: case 21:
 					receive_stnd_data( samp, 40 );
 					break;
 				default :
@@ -114,10 +114,13 @@ receive_stnd_data( SD_HEADER *samp, register short spp )
 			switch( spp ) {
 				case 60 :
 					cp = p->data;
-					for( x = 0; x < spp; x++ ) *S_data++ = ( *(cp++) << 9 ) + ( *(cp++) << 2 ) - 0x8000;
+					for( x = 0; x < spp; x++, cp += 2 )
+						*S_data++ = ( cp[0] << 9 ) + ( cp[1] << 2 ) - 0x8000;
 					break;
 				case 40 :
-					for( x = 0; x < spp; x++ ) *S_data++ = ( *(cp++) << 9 ) + ( *(cp++) << 2 ) + ( *(cp++) << 3 ) - 0x8000;
+					cp = p->data;
+					for( x = 0; x < spp; x++, cp += 3 )
+						*S_data++ = ( cp[0] << 9 ) + ( cp[1] << 2 ) + ( cp[2] >> 5 ) - 0x8000;
 					break;
 			}
 
