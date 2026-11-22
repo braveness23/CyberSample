@@ -274,7 +274,7 @@ short edit_flag = 0, sample_flag = 0, paste_flag = 0, undo_flag = 0;
 short smp_no = 0;
 SD_HEADER s[NUM_SMPL], *t, *p, *u;
 OBJECT *disp;
-WINDOW g = { -1, MOVER|NAME|CLOSER|FULLER|SIZER, "CyberSample v.159", "", NULL };
+WINDOW g = { -1, MOVER|NAME|CLOSER|FULLER|SIZER, "CyberSample v.160", "", NULL };
 GRECT desk;
 short left_mode = MODE_VIEW;
 SD_HEADER default_sd_header = { 1336, 11, 0, "", 0, 0, "", -256, 1, 327, 04, 0, "%Scale",
