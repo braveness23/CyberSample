@@ -1,0 +1,6 @@
+out/
+ci/.cache/
+*.o
+*.O
+*.PRG
+!ci/runcmd/RUNCMD.TOS

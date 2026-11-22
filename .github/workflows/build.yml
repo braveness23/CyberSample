@@ -1,0 +1,51 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scrub:
+    name: privacy guardrail
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ci/scrub-check.sh
+
+  build:
+    name: build CYBR160.PRG (Hatari + Lattice C 5.60)
+    needs: scrub
+    runs-on: ubuntu-latest
+    # Lattice C is commercial and not part of this repo. The toolchain comes from a repository secret, which
+    # forks and pull requests from forks do not receive, so on those this job reports "skipped" rather than failing.
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch toolchain
+        id: tc
+        env:
+          LATTICE_URL: ${{ secrets.LATTICE_URL }}
+          LATTICE_SHA256: ${{ secrets.LATTICE_SHA256 }}
+        run: |
+          if [ -z "$LATTICE_URL" ]; then
+            echo "::notice::LATTICE_URL secret not set - build skipped (this is expected on forks)"
+            echo "have=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          curl -fsSL "$LATTICE_URL" -o lattice.tar.gz
+          echo "$LATTICE_SHA256  lattice.tar.gz" | sha256sum -c -
+          mkdir lattice && tar -xzf lattice.tar.gz -C lattice
+          echo "have=true" >> "$GITHUB_OUTPUT"
+      - name: Install emulator
+        if: steps.tc.outputs.have == 'true'
+        run: sudo apt-get update && sudo apt-get install -y hatari xvfb python3 curl unzip
+      - name: Build
+        if: steps.tc.outputs.have == 'true'
+        run: ci/build.sh --lattice lattice
+      - uses: actions/upload-artifact@v4
+        if: steps.tc.outputs.have == 'true'
+        with:
+          name: CYBR160-prg
+          path: out/
