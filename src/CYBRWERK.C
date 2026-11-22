@@ -451,7 +451,7 @@ OBJECT HLP[] = {
 
 
 char ALERT_QUIT[] = "[1][Sure you want to quit\?][QUIT|Go Back!]";
-char ALERT_ABOUT[] = "[1][CyberSample v.160|Copyright 1993|braveness23  ][OK]";
+char ALERT_ABOUT[] = "[1][CyberSample v.160|Copyright 2026|braveness23|github.com/braveness23/|CyberSample][OK]";
 char ALERT_MEMORY[] = "[3][There is not enough memory|for this operation...][ OK ]";
 char ALERT_NSUPPORT[] = "[0][ This Format Not Supported ][ Darn ]";
 char ALERT_NOEDIT[] = "[1][No Edit Region has been define][OK]";
