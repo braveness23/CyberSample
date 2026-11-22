@@ -87,7 +87,7 @@ receive_stnd_data( SD_HEADER *samp, register short spp )
 	register char x;
 	register char check;
 	register char *cp;
-	register long packets = ( samp->SampLength / spp ) + 1; 
+	register long packets = ( samp->SampLength + spp - 1 ) / spp; 
 	register long packet_no;
 	long count;
 	short temp;
@@ -298,7 +298,7 @@ transmit_stnd_data( SD_HEADER *samp, short truncate, short bits )
 
 	if( truncate && samp->Loop1End <= 0 ) truncate = FALSE;	// no loop set: send the whole sample
 	num = truncate ? samp->Loop1End : samp->SampLength;
-	packets = ( num / spp ) + 1;
+	packets = ( num + spp - 1 ) / spp;
 
 	STATUS[STAT_MARKER].ob_width = 0;
 	form_center( STATUS, ELTX( &r ) );
