@@ -246,6 +246,7 @@ hndl_send( SD_HEADER *samp )
 	static short trunc_to_loop = TRUE;
 	static short format = SEND_12;
 	STND_HEADER h;
+	short bits;
 
 	deselect_tree( SEND );
 
@@ -271,20 +272,22 @@ hndl_send( SD_HEADER *samp )
 		return;
 	}
 
-	pack_header( &h, samp );
+	bits = ( format == SEND_16 ) ? 16 : 12;
+	pack_header( &h, samp, bits );
 	FLUSH_MIDI_BUFFER;
 	Midiws( 20, (char *)&h );
-	transmit_stnd_data( samp, trunc_to_loop );
+	transmit_stnd_data( samp, trunc_to_loop, bits );
 }
 
 short 
-transmit_stnd_data( SD_HEADER *samp, short truncate )
+transmit_stnd_data( SD_HEADER *samp, short truncate, short bits )
 {
 	STND_PACKET p;
 	long packets;
 	long num;
 	long packet_no;
 	short byte, word, x;
+	short spp = ( bits == 16 ) ? 40 : 60;		// words per packet: 3 bytes each for 16 bit, 2 for 12 bit
 	char *cp = (char *)&p;
 	unsigned short temp;
 	long count;
@@ -294,8 +297,8 @@ transmit_stnd_data( SD_HEADER *samp, short truncate )
 	
 
 	if( truncate && samp->Loop1End <= 0 ) truncate = FALSE;	// no loop set: send the whole sample
-	packets = truncate ? ( samp->Loop1End / 60 ) + 1 : ( samp->SampLength / 60 ) + 1;
 	num = truncate ? samp->Loop1End : samp->SampLength;
+	packets = ( num / spp ) + 1;
 
 	STATUS[STAT_MARKER].ob_width = 0;
 	form_center( STATUS, ELTX( &r ) );
@@ -331,10 +334,12 @@ transmit_stnd_data( SD_HEADER *samp, short truncate )
 		else for( count = 0; count < 1000; count++ );
 
 		p.packet_no = (char)( packet_no & 0x7f );
-		for( byte = 0, word = 0; word < 60; word++ ) {
-			temp = num-- > 0 ? *( samp->FirstSamp + ( packet_no * 60 ) + word ) + 0x8000 : 0L;
+		for( byte = 0, word = 0; word < spp; word++ ) {
+			temp = num-- > 0 ? *( samp->FirstSamp + ( packet_no * spp ) + word ) + 0x8000 : 0L;
 			p.data[byte++] = 	(char)( temp >> 9 ) & 0x7f; 
 			p.data[byte++] =	(char)( temp >> 2 ) & 0x7f; 
+			if( bits == 16 )								// 16 bit: the last 2 bits, left-justified, in a third byte
+				p.data[byte++] = (char)( temp << 5 ) & 0x7f;
 		}
 		for( x = 1, p.checksum = 0; x < 125; x++ ) p.checksum ^= cp[x];
 		Midiws( 126, (char *)&p );
@@ -349,12 +354,12 @@ transmit_stnd_data( SD_HEADER *samp, short truncate )
 }
 
 void
-pack_header( STND_HEADER *h, SD_HEADER *samp )
+pack_header( STND_HEADER *h, SD_HEADER *samp, short bits )
 {
 	memcpy( h, &default_stnd_header, sizeof( STND_HEADER ) );
 	h->channel = device;
 	h->s_no_l = sample;
-	h->s_format = 12;
+	h->s_format = bits;
 	if( samp->SampRate < 1 ) samp->SampRate = 44100;		// avoid dividing by zero below
 	samp->SampPeriod = 1000000000 / samp->SampRate;
 	h->s_rate_l = 		(char)( ( samp->SampPeriod 		 )	& 0x7f );
