@@ -24,8 +24,12 @@ open_sd( SD_HEADER *samp, char *file )
 	graf_mouse( HOURGLASS, 0L );
 
 	if( ( fhandle = Fopen( file, 0 ) ) >= 0 ) {
-		if( Fread( fhandle, sizeof(SD_HEADER), samp ) == sizeof(SD_HEADER)) {
-			if( samp->header_size == 1336 ) {
+		SD_HEADER hdr;			// read into a temporary so a bad file can't leave junk in the sample slot
+
+		if( Fread( fhandle, sizeof(SD_HEADER), &hdr ) == sizeof(SD_HEADER)) {
+			if( hdr.header_size == 1336 && hdr.SampLength >= 0 ) {
+				*samp = hdr;
+				samp->FirstSamp = NULL;		// the pointer stored in the file is meaningless
 				if( samp->SampLength ) {
 					if(samp->FirstSamp=(short *)malloc( samp->SampLength * sizeof(char) )){
 						if( Fread( fhandle, samp->SampLength, samp->FirstSamp)==samp->SampLength){
