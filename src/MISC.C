@@ -308,8 +308,8 @@ hndl_play_note( short note )
 	char msg[3];
 	
 	msg[0] = 0x90 | (char)( note_channel[ note ] & 0x0f );
-	msg[1] = (char) note_number[ note ] & 0xef;
-	msg[2] = (char) note_velocity[ note ] & 0xef;
+	msg[1] = (char) note_number[ note ] & 0x7f;
+	msg[2] = (char) note_velocity[ note ] & 0x7f;
 	
 	Midiws( 2, msg );
 	wait_for_button_up();
