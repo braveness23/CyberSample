@@ -45,7 +45,7 @@ edit_amplitude( register SD_HEADER *samp, register short arg1, register short ar
 				S_data = &samp->FirstSamp[ samp->EditStart ];
 				num = samp->EditEnd - samp->EditStart;
 
-				while( num-- ) *S_data++ = (short)( *S_data * ratio );
+				while( num-- ) { *S_data = (short)( *S_data * ratio ); S_data++; }
 
 			}
 			break;
@@ -97,14 +97,16 @@ hndl_fade_in_out( register SD_HEADER *samp )
 	if( func == FADE_OUT && type == FADE_LINEAR ) {
 		while( num-- ) {
 			ratio = num / (float)length; 
-			*S_data++ = (short)( *S_data * ratio );
+			*S_data = (short)( *S_data * ratio );
+			S_data++;
 		}
 	}
 	else if( func == FADE_OUT && type == FADE_SQUARE ) {
 		while( num-- ) {
 			ratio = num / (float)length; 
 			ratio *= ratio;
-			*S_data++ = (short)( *S_data * ratio );
+			*S_data = (short)( *S_data * ratio );
+			S_data++;
 		}
 	}
 	else if( func == FADE_IN && type == FADE_LINEAR ) {
