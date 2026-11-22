@@ -465,17 +465,16 @@ void
 start_zero( SD_HEADER *samp )
 {
 	long temp_start = samp->Loop1Start + 1;
-	
-	while( !
-	
-		( 
-		samp->FirstSamp[ temp_start - 1 ] < 0 
-		&&
-		samp->FirstSamp[ temp_start + 1 ] > 0	
-		) 
-	)temp_start += 1;
 
-	if( temp_start < samp->Loop1End && temp_start < samp->SampLength )
+	if( !samp->FirstSamp || samp->SampLength < 3 ) return;	/* nothing to search */
+	if( temp_start < 1 ) temp_start = 1;
+
+	/* search forward for a negative-to-positive crossing, staying inside the buffer */
+	while( temp_start < samp->SampLength - 1 &&
+		!( samp->FirstSamp[ temp_start - 1 ] < 0 && samp->FirstSamp[ temp_start + 1 ] > 0 ) )
+		temp_start += 1;
+
+	if( temp_start < samp->SampLength - 1 && temp_start < samp->Loop1End )
 		samp->Loop1Start = temp_start;
 
 	force_complete_redraw();
@@ -485,17 +484,16 @@ void
 end_zero( SD_HEADER *samp )
 {
 	long temp_end = samp->Loop1End - 1;
-	
-	while( !
-	
-		( 
-		samp->FirstSamp[ temp_end - 1 ] < 0 
-		&&
-		samp->FirstSamp[ temp_end + 1 ] > 0	
-		) 
-	)temp_end -= 1;
 
-	if( temp_end > samp->Loop1Start && temp_end < samp->SampLength )
+	if( !samp->FirstSamp || samp->SampLength < 3 ) return;	/* nothing to search */
+	if( temp_end > samp->SampLength - 2 ) temp_end = samp->SampLength - 2;
+
+	/* search backward for a negative-to-positive crossing, staying inside the buffer */
+	while( temp_end >= 1 &&
+		!( samp->FirstSamp[ temp_end - 1 ] < 0 && samp->FirstSamp[ temp_end + 1 ] > 0 ) )
+		temp_end -= 1;
+
+	if( temp_end >= 1 && temp_end > samp->Loop1Start )
 		samp->Loop1End = temp_end;
 
 	force_complete_redraw();
