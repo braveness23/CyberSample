@@ -15,7 +15,7 @@ edit_amplitude( register SD_HEADER *samp, register short arg1, register short ar
 	register short *S_data = edit_address( samp );
 	register long num = edit_length( samp );
 	register float ratio;
-	register short *S_end = post_edit_address( samp );
+	register short *S_end = post_edit_address( samp ) - 1;	/* last selected sample, not one past it */
 	
 	if( !edit_flag ) {
 		form_alert( 1, ALERT_NOEDIT );
@@ -75,7 +75,7 @@ hndl_fade_in_out( register SD_HEADER *samp )
 	register short *S_data = edit_address( samp );
 	register long num = edit_length( samp );
 	register float ratio;
-	register short *S_end = post_edit_address( samp );
+	register short *S_end = post_edit_address( samp ) - 1;	/* last selected sample, not one past it */
 	register length = num;
 		
 	if( !edit_flag ) {
@@ -110,14 +110,16 @@ hndl_fade_in_out( register SD_HEADER *samp )
 	else if( func == FADE_IN && type == FADE_LINEAR ) {
 		while( num-- ) {
 			ratio = num / (float)length;
-			*S_end-- = (short)( *S_end * ratio );
+			*S_end = (short)( *S_end * ratio );
+			S_end--;
 		}
 	}
 	else if( func == FADE_IN && type == FADE_SQUARE ) {
 		while( num-- ) {
 			ratio = num / (float)length;
 			ratio *= ratio;
-			*S_end-- = (short)( *S_end * ratio );
+			*S_end = (short)( *S_end * ratio );
+			S_end--;
 		}
 	}
 	
