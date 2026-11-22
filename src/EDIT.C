@@ -476,8 +476,13 @@ hndl_rate_conv( SD_HEADER *s )
 	long oldrate = s->SampRate;
 	static long newrate = 44100;
 	double factor = 1.0, increment, curr_flt, rmndr, flr;
-	long oldlength = sample_length( s ), newlength, pos;
+	long oldlength = sample_length( s ), newlength, pos, fl, nx;
 	short *olddata = s->FirstSamp, *newdata = NULL;
+
+	if( !olddata || oldlength < 2 || oldrate < 1 ) {
+		form_alert( 1, "[1][No sample to convert][OK]" );
+		return;
+	}
 		
 try_again:
 	sprintf( TED_PTEXT(RATE_CONV,RATE_CONV_OLD), "%d", oldrate );
@@ -503,6 +508,11 @@ try_again:
 		increment = 1 / factor;
 		newlength = (long)( oldlength * factor );
 
+		if( newlength < 2 ) {
+			form_alert( 1, "[1][Result would be too short][OK]" );
+			return;
+		}
+
 		if( newdata = (short *)malloc( SIZ(newlength) ) ) {
 			graf_mouse( HOURGLASS, 0L );
 
@@ -512,7 +522,9 @@ try_again:
 				flr = (long)floor( curr_flt );
 				rmndr = curr_flt - (double)flr;
 
-				newdata[pos] = olddata[(long)flr] + ( rmndr * ( olddata[(long)flr + 1] - olddata[(long)flr] ));
+				fl = (long)flr;
+				nx = ( fl + 1 < oldlength ) ? fl + 1 : fl;			/* don't read past the last sample */
+				newdata[pos] = olddata[fl] + ( rmndr * ( olddata[nx] - olddata[fl] ));
 
 				//curr_a = *( olddata + (long)flr );
 				//curr_b = *( olddata + (long)flr + 1 );
@@ -528,6 +540,7 @@ try_again:
 			s->Loop1End 	= (long)( s->Loop1End * factor );
 			s->EditStart 	= (long)( s->EditStart * factor );
 			s->EditEnd 		= (long)( s->EditEnd * factor );
+			reset_view_params( s );								/* old LeftEdge/zoom no longer fit */
 
 			graf_mouse( ARROW, 0L );
 			force_complete_redraw();

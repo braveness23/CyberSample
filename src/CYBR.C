@@ -497,6 +497,7 @@ enable_check_menu( void )
 	menu_ienable( CYBMENU, MN_LOWPASS,			edit_flag );
 	menu_ienable( CYBMENU, MN_HIGHPASS,		edit_flag );
 	menu_ienable( CYBMENU, MN_VIEW_ALL,		sample_flag );
+	menu_ienable( CYBMENU, MN_RATE_CONV,		sample_flag );
 	menu_icheck ( CYBMENU, MN_MIDITHRU,		midithru_flag );
 	menu_icheck ( CYBMENU, MN_LOOP_OFF,		t->Loop1Type == 0 );
 	menu_icheck ( CYBMENU, MN_LOOP_FWD,		t->Loop1Type == 1 );
