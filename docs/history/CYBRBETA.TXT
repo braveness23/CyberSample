@@ -1,0 +1,163 @@
+OK folks, lets get this started...
+
+Let me start by saying WOW!!  I'm overwhelmed by your interest and
+very eager to get your individual and collective responces.  I also
+hope to gain some insight on what needs to be done to make this
+sample editor useful to you and other sample editing Atarians.
+
+--------------------------------------------------------------------------
+Where CyberSample is now:
+--------------------------------------------------------------------------
+The progam is called CyberSample, but this may have to change because
+I've recently seen the name in print refering to something else.  It
+is a window base sample editor.  It can hold up to 8 samples at once.
+The size of the samples is limited only by amount of free memory.  It
+can load and save samples via the .SD  Sound Designer format ( will
+also load .SND ADAP files ).  It can receive samples via midi
+standard dump in any format from 8 to 20 bits.  It currently sends
+samples via midi standard dump in 12 bit format ( soon to be upgraded ).
+Samples can be saved to or loaded from the GEM clipboard.  Any other
+program may be launched from within CyberSample.
+
+Samples data is 16 bit inside CyberSample.
+
+CyberSample also has a paste and undo buffer ( undo is only partialy
+emplimented so far ).  Portions of the sample may be cut or copied
+into the paste buffer.  Several options are available for pasting
+including insert, multiple insert, replace, and multiple replace.
+More paste options are on the way.
+
+The following edit features are available under the DSP menu title.
+Truncate, invert, +6db, -6db, reverse, clear, Mirage, fade in, fade
+out, noise gate.  Most of these features currently operate as one
+would expect, however, several of them require some refining.  Mirage
+masks out the 12 least significant bits of the sample making it sound like 
+it was in 4 bit resolution ( grunge effect ).  Fade in/out are
+currently linear ( more options on the way ).  Noise gate is
+non-functioning but soon will allow you to set a threshold, gate
+time, and expansion ratio. 
+
+Most editing is done by using the mouse to select an edit region and
+then selecting an edit option from the menu.
+
+The left mouse button has many different functions (modes) within the 
+program.  These modes are: 
+
+     Drag Edit Region
+     Select Edit Start
+     Select Edit End
+     Drag View
+     Drag Loop1
+     Select Loop1 Start
+     Select Loop1 End
+
+To set the Left Mouse Mode, simply click the right mouse button
+anywhere on the screen (except in the menu bar).  A Popup menu will
+appear near the mouse allowing you to select a new mode.  Either
+click on a new selection (the menu will disappear) or click anywhere
+outside of the popmenu to keep the current selection.  The Popup menu
+is currently text based but will soon be icon based.  
+
+The sample is displayed in two boxes in the window.  The top box always 
+shows the entire sample (Overview).  The lower box zooms in on any 
+portion of the sample (Closeup)  It is easy to select the zoomed view.  
+Simply set the Left Button Mode to 'View', and click and drag in the
+sample Overview.  A slider bar is also provided just below the
+Overview which allows you to move around within the sample without
+changing the zoom ratio.
+
+If the dump features do not work on your sample (they very well might 
+not, in fact - probably not ) check to see if your owners manual has
+the samplers dump specs in the back.  I want to support your sampler...
+In the meantime,  just mess around with the samples included.  You can
+tell a lot about a sample editor without ever hearing the final sounds.
+
+--------------------------------------------------------------------------
+Where CyberSample is going:
+--------------------------------------------------------------------------
+Frankly, this is where I would like a lot of input.  I already have a
+bit of an agenda for things to work on but would like to know what
+YOU think the next step is.  Here are a few of the things on my list:
+
+-The process of setting loop points is still primitive.  Click and
+drag.  There are no visual indicators of where the loop points are or
+whether the loop is turned on.  Also, there is currently no way of
+matching the loop points ( viewing the loop start and end points as
+one continuous wave ).  First, I want to provide visual loop markers.
+I will probably keep the method of selecting loop points ( in order
+to keep the learning curve down on the program ) - I think it works.
+Next, I want to allow the user to move the loop points by increments
+of one, five, ten (?) samples and to be able to find zero crossings
+in both directions.  ( in fact these options should be available on
+edit points also ).  Finally I will probably allow the use to select
+what will show in the bottom display box (loop or stnd).  Crossfading
+will need to be available.  I have not begun to think about how to do
+that.
+
+-More sample dump options (and smoother operation) are neccessary.
+Let me know what language(s) your sampler(s) speaks and help me get in
+touch with the manufacturer to get the specs.  Testing in this area
+will require gobs of patience since I dont own your model of sampler
+and cant be there to help diagnose problems.  Some samplers offer
+some pretty fancy features and I may opt to pass on some of them for
+a while in order to achieve a solid generic level of operation first. 
+Currently, if you are using an 8Mhz 68000 CPU ( ST ) you MUST NOT move the
+mouse very much while Getting a sample from the sampler.  The system 
+interrupts generated by the mouse movement will cause errors in the dump 
+and the program may hang.  Code is built into CyberSample to disable the 
+mouse durring dumps but is not currently implimented.  CyberSample
+has only been heavily tested so far on a Yamaha TX16W.  The TX speaks
+standard midi dump with only a few differnces so CyberSample may
+already work with other samplers.  I hope you'll hang in there with
+me so we can get it working with your sampler!!!
+
+-I would like to add some more DSP fx like distortion, EQ,  dynamic
+compression (!!!), and of course time based DSP like pitch change,
+sample rate conversion, and others.  Frankly,  I don't know much
+about real hard core DSP like sample rate conversion and pitch changing.
+These thing will take a lot of studying on my part.
+
+-Format converting.  I will probably work on a seperate program that
+handles this.  It would be cool to be able to put your EPS16+ disk
+into your ST drive and load the sample that way instead if via midi.
+Also grabbing samples from BBS's can be fun.  File conversion is
+neccessary.  Let me know what file formats you've seen that need to
+be converted.  BTW ADAP .SND files are so similar that CYBERSAMPLE dosn't
+know the difference, go ahead and use them!!! ( ADAP does NOT recocgnize 
+.SD files - it only works one way ).
+
+-Playing samples via monitor speaker.  This will happen eventually.
+It's still out of my league but that never stopeed me from trying...
+Should be able to detect ST/STe/Falcon and take advantage of the best
+option available.
+
+---------------------------------------------------------------------------
+O.K. - now it's your turn - what do you want to see?  Be specific. Be Bold.
+---------------------------------------------------------------------------
+When you find problems with the current version, please let me know.  
+Try to duplicate the problem and narrow it down. 
+
+If you want to give me a call my phone number is [phone number removed] durring the
+day (until 4 p.m. EST) and [phone number removed] after 9 p.m. EST.  We'll chat.
+
+...Last minute additions...................................................
+
+-Clicking on the sample rate in to information bar will bring up a dialog
+box allowing you to change the sample rate.  Note this does NOT change
+the sample data to keep the sample at its original pitch.  This has not 
+been tested much for errors. Thats your job <g>...
+
+-The mouse IS now disabled while downloading samples via midi.  This is
+due to the excessive number of interrupts that moving the mouse causes.
+They just get in the way.  This will soon be an OPTION but for now just 
+bear with it.  If an error occurrs causing the dump to fail, the mouse 
+may not recover.  Rebooting is the only fix... :-( 
+
+-Durring midi downloading, if a checksum error is detected, your monitors
+"bell" will ding.  Usually if this happens, it happens about 10,000,000 
+times in a row.  It'll drive you nuts...
+
+-'Reverse' is about three times as fast now.  I mean NO time at all!!
+
+- Fade in/out only work properly on very small edit regions.  If the
+region is too long, the sample clips.  Try it for a cool fx...( maybe )

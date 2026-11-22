@@ -1,0 +1,17 @@
+..\CYBR160\CYBR160.PRG
+.C	[-b4 -r6 -cf -ci -cu -cm -d0 -fl -m0 -rs -fm -dCYBERSAMPLE -i..\LC\HEADERS\ -j100i]
+.S	[-m0]
+=
+C.O
+CYBR.C
+DRAW.C
+CCP.C
+EDIT.C
+FILE.C
+GET.C
+MISC.C
+CYBRWERK.C
+MIDI.S
+LCG.LIB
+LCM.LIB
+LC.LIB

@@ -1,0 +1,90 @@
+REQUIREMENTS FOR CYBERSAMPLE
+----------------------------
+
+-   Import Samples from a midi sampler
+    -   use midi sample dump standard
+    -   allow user to select sample number to request
+    -   allow user to select midi channel of sampler
+    -   allow user to view sample parameters before proceeding with the dump
+    -   allow user to name sample before receiving data
+    -   allow user to abort dump
+    -   program should recover smoothly if transmission errors occurr
+
+-   Export samples to a midi sampler
+    -   use midi sample dump standard
+    -   allow user to set the sample number before sending
+    -   allow user to set the midi channel to transmit on
+    -   allow user to abort dump
+    -   program should recover smoothly if transmission errors occurr
+
+-   Load samples from disk
+    -   use the .SD ( sound designer ) file protocol
+    -   convert parameters when neccessary
+    -   test all operations for i/o errors, report any errors, and recover
+        smoothly
+            
+-   Save samples to disk
+    -   use the .SD ( sound designer ) file protocol
+    -   set all unused parameters to the specified default values
+    -   covert and set all used parameters correctly in a manner that will 
+        allow reading by any other program using .SD files.
+    -   test all operations for i/o errors, report any errors, and recover
+        smoothly
+            
+-   Allow eight samples in memory
+    -   one sample will be the current sample - all edits will be performed
+        on the current sample
+    -   only the current sample will be displayed on the screen
+
+-   Display sample on screen
+    -   the sample will be drawn in a moveable, sizeable window on the screen
+    -   two drawing modes will be available to reflect the amplitude of the
+        sample; FULL WAVE and AMPLITUDE  
+
+-   Display pertainent information about the sample on screen
+    -   sample name
+    -   sample length
+    -   sample rate
+    -   edit start/end points
+    -   loop start/end points
+    -   loop type
+    -   horizontal time line showing time in msec or samples
+    -   vertical scale line showing amplitude in dB ot %
+
+-   Allow user to select an edit block
+    -   BLOCK START refers to the first word of the block
+    -   BLOCK END refers to the first sample AFTER the last sample in the
+        block.  It DOES NOT refer to the last word of the block 
+
+-   Allow user to perform edits on the edit block
+    -   Cut
+    -   Copy
+    -   Paste
+    -   Delete
+    -   Clear
+    -   Insert
+    -   Merge
+    -   Save
+    -   Truncate
+    -   Invert
+    -   Reverse
+    -   +/- 6dB
+    -   Normalize
+
+-   Allow user to perform DSP on the edit block
+    -   Mirage
+     
+-   Allow user to create loops
+    -   LOOP START refers to the first word of the loop
+    -   LOOP END refers to the first sample AFTER the last sample in the
+        loop.  It DOES NOT refer to the last word of the loop. 
+
+-   Allow user to play the sample through the computers speaker
+    -   take advantage of STe DMA sound hardware if available
+
+-   Allow user to play the midi sampler from the computer
+    -   Allow user to set the midi channel, note number, and velocity
+        of the note to be played via a keyboard dialog box
+    -   Allow user to play note from the main screen by clicking on an icon
+
+-   Allow the user to alter the sample rate of the sample

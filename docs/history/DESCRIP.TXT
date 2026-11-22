@@ -1,0 +1,63 @@
+CyberSample ST is a midi graphic sample editor for the Atari ST line of
+computers.
+
+The key philosophy behind the design of CyberSample is to provide a powerful
+yet inexpensive sound editing tool that will run on the most basic ST 
+setup.  Both Color and Monichrone monitors will be supported.
+
+Its primary purpose is to allow the user to import digital recordings into
+the Atari ST from any sampler supporting the Midi sample dump standard or
+from floppy disks via a variety of standard file formats.  Once inside the
+computer, the soundwave is displayed on the screen.  The user may then make 
+various edits on the wave data in order to "clean up" the sample or to 
+achieve special effects.  Looping points may also be set to create the 
+illusion of sustain.
+
+Once the sample has been edited to the users liking, it can then be exported
+back to the original sampler ( or any other sampler ) to be used as a
+musical sound or as a special effect.  CyberSample will also allow the user
+to save the samples to floppy disk for archival purposes or for trading and
+selling.
+
+-There will be "slots" for eight samples in CyberSample.  One extra slot
+will provide an UNDO LAST EDIT function.  The size of the sample is limited
+only by the amount of available RAM in the ST.
+
+-Facilities will be provided to allow the user to easily zoom in and out 
+on any portion of the wave.  
+
+-The user may set a number of "markers" to allow
+him/her to instantly jump to specified locations within the sample.
+
+-The user may set a pair of looping points to create the effect of sustain.
+Special commands will help ease this, often tedious, task.
+
+-The user may set a pair of block points to define an area of the sample to 
+edit.  The block may include any portion of the sample, from one individual 
+point to the entire waveform. 
+
+-Cut/Copy/Paste/Delete/Save/Insert/etc. functions can be performed on the
+block as well as many other edit functions.
+
+-A number of editing functions will be included that will help optimize the 
+sample and make it more useful.  Some of these functions include: Truncate,
+Normalize, Invert, Gain increase/decrease, Equalize, and Sample rate conv-
+ersion.
+
+-Effects features will be included to help eliminate the need for expensive
+external signal processors.  Some of these are: Noise gating, Expanding,
+Compressing, Limiting, Digital Distortion, Echo, Reverb, Chorus, Flanging,
+Tremello, Clipping, Comb filtering, Pitch Shifting.  Other effects will be
+added.  
+
+-CyberSample will let the user import any data from disk treating it 
+as sound data.  The user will be allowed to specify a file offset value and
+the data type ( signed or unsigned, 8 or 16 bit ).  This will enable the user
+to import sound file types not supported by CyberSample or to experiment
+with unusual sounds.
+
+Most operations will be activated from the menu bar.  Every menu command 
+will have a matching keyboard command.  When neccessary, a dialog box will
+prompt the user for additional parameters.
+
+

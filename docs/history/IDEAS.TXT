@@ -1,0 +1,48 @@
+-Modified and additional dump routines to optimize sending/recieving samples
+    with Beat Boxes samplers - S1100, MPC60II, DSS1, Mirage, Emulator II, Emax
+    
+xxx-Routines for finding upward zero crossings for edit and loop points
+
+-Falcon 030 compatability
+
+-Falcon 030 sound port usage
+
+-Falcon 030 DSP usage
+
+-Send new loop points to sampler immediately (disable optional)
+
+xxx-Dump Option "Loop End is End of Sample" for TX16W   FIX DIALOG............
+
+xxx-Add parameter passing to _main(...)
+
+xxx-CyberSample plays notes
+
+-CyberSample saves a configuration file
+
+xxx-CyberSample uses GEM Clipboard
+
+xxx-CyberSample Does Fade In/Out properly
+
+xxx-CyberSample Does Normalize properly
+
+xxx-CyberSample gives more options with Mirage feature
+
+xxx-get rid of popup-menu  replace with screen buttons
+
+xx-add modifier key optios to mouse operations
+
+-clicking on VIEW_BAR move closeup by up to 1 screen
+
+-noise gate/ expander
+
+-compressor/limiter
+
+-volume change
+
+-echo
+
+-fade in/out linear, square root, quadratic...
+
+-subtract
+
+-merge 
