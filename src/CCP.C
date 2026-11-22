@@ -12,6 +12,9 @@ hndl_cut( SD_HEADER *samp )
 {
 	short *segaddr[3];
 	long seglen[3];
+	/* The paste buffer is also selectable as the current sample.  Cutting from it can't also
+	   fill it, so there the cut just deletes the selection (Undo brings it back). */
+	short to_clip = ( samp != p );
 
 	if( edit_length(samp) == sample_length(samp) ) {
 		form_alert( 1, ALERT_CUT_ALL );
@@ -19,12 +22,12 @@ hndl_cut( SD_HEADER *samp )
 	}
 
 	new_sample( u, NPROMPT );
-	new_sample( p, NPROMPT );
+	if( to_clip ) new_sample( p, NPROMPT );
 	*u = *samp;
 	samp->SampLength = sample_length(u) - edit_length(u);
-	p->SampLength = edit_length(u);
+	if( to_clip ) p->SampLength = edit_length(u);
 	if( ( samp->FirstSamp = (short *)malloc( SIZ(samp->SampLength) ) ) &&
-		( p->FirstSamp = (short *)malloc( SIZ(edit_length(u) ) ) ) ) 
+		( !to_clip || ( p->FirstSamp = (short *)malloc( SIZ(edit_length(u) ) ) ) ) )
 	{
 		segaddr[0] = off_addr( u, 0L );
 		seglen[0] = u->EditStart;
@@ -36,13 +39,15 @@ hndl_cut( SD_HEADER *samp )
 			memcpy( off_addr( samp, 0L ), segaddr[0], SIZ(seglen[0]) );							
 		if( seglen[2] )
 			memcpy( off_addr( samp, seglen[0] ), segaddr[2], SIZ(seglen[2]) );
-		if( seglen[1] ) 
+		if( to_clip && seglen[1] ) 
 			memcpy( off_addr( p, 0L ), segaddr[1], SIZ(seglen[1]) );
-		reset_filename(p);
-		reset_view_params(p);
-		reset_edit_params(p);
-		reset_loop1_params(p);
-		reset_loop2_params(p);
+		if( to_clip ) {
+			reset_filename(p);
+			reset_view_params(p);
+			reset_edit_params(p);
+			reset_loop1_params(p);
+			reset_loop2_params(p);
+		}
 		reset_view_params(samp);
 		reset_edit_params(samp);
 		reset_loop1_params(samp);
@@ -50,9 +55,10 @@ hndl_cut( SD_HEADER *samp )
 	}				
 	else {
 		form_alert( 1, ALERT_MEMORY );
+		if( samp->FirstSamp ) free( samp->FirstSamp );		/* first allocation succeeded, second failed */
 		*samp = *u;
 		*u = default_sd_header;
-		new_sample( p, NPROMPT );
+		if( to_clip ) new_sample( p, NPROMPT );
 	}
 
 	force_complete_redraw();
@@ -61,32 +67,34 @@ hndl_cut( SD_HEADER *samp )
 void
 hndl_copy( SD_HEADER *samp )
 {
-	short *segaddr[1];
-	long seglen[1];
+	SD_HEADER src;
+	short *buf;
+	long len;
 
 	if( !edit_flag ) {
 		form_alert( 1, ALERT_NOEDIT );
 		return;
 	}
+
+	/* Take the selection out of the source *before* touching the paste buffer: when the
+	   source is the paste buffer itself, new_sample( p ) would free the very data being copied. */
+	len = edit_length( samp );
+	if( !( buf = (short *)malloc( SIZ(len) ) ) ) {
+		form_alert( 1, ALERT_MEMORY );						/* the old paste buffer is left alone */
+		return;
+	}
+	memcpy( buf, off_addr( samp, samp->EditStart ), SIZ(len) );
+	src = *samp;
+
 	new_sample( p, NPROMPT );
-	*p = *samp;
-
-	segaddr[0] = off_addr( samp, samp->EditStart );
-	seglen[0] = edit_length(samp);
-
-	if( p->FirstSamp = (short *)malloc( SIZ(seglen[0]) ) ) {
-		memcpy( p->FirstSamp, segaddr[0], SIZ(seglen[0])  );
-		p->SampLength = seglen[0];
-		reset_filename(p);
-		reset_view_params(p);
-		reset_edit_params(p);
-		reset_loop1_params(p);
-		reset_loop2_params(p);
-	}
-	else {
-		new_sample( p, NPROMPT );
-		form_alert( 1, ALERT_MEMORY );
-	}
+	*p = src;
+	p->FirstSamp = buf;
+	p->SampLength = len;
+	reset_filename(p);
+	reset_view_params(p);
+	reset_edit_params(p);
+	reset_loop1_params(p);
+	reset_loop2_params(p);
 }
 
 void
