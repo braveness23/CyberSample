@@ -314,8 +314,10 @@ transmit_stnd_data( SD_HEADER *samp, short truncate )
 		if( handshake_flag ) {
 			count = 0;
 			while( midibuf->ibuftl < 6 ) 
-				if( count++ > 300000 ) 
+				if( count++ > 300000 ) {
 					handshake_flag = FALSE;
+					break;
+				}
 		}
 		else for( count = 0; count < 1000; count++ );
 
