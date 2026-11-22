@@ -110,6 +110,137 @@ delete_file( void )
 	return truth;
 }
 		
+//******** Native WAV (RIFF/WAVE PCM) import, added 2026-11-19 ******
+// WAV data is little-endian; CyberSample keeps 16-bit signed big-endian words.
+// Handles 8-bit (unsigned), 16-bit and 24-bit PCM, any rate; takes the LEFT
+// channel of multi-channel files. Walks the RIFF chunks, so extra chunks
+// after the data chunk (LIST, smpl, ...) are never loaded as audio.
+
+#define LE16(p) ( (unsigned short)( (p)[0] | ( (p)[1] << 8 ) ) )
+#define LE32(p) ( (unsigned long)(p)[0] | ( (unsigned long)(p)[1] << 8 ) | \
+				  ( (unsigned long)(p)[2] << 16 ) | ( (unsigned long)(p)[3] << 24 ) )
+
+static unsigned char wav_buf[ 1024 ];
+
+// returns TRUE if the file starts with RIFF....WAVE
+static short
+is_wav_file( char *file )
+{
+	short fh, ok = FALSE;
+	unsigned char hdr[ 12 ];
+
+	if( ( fh = Fopen( file, 0 ) ) >= 0 ) {
+		if( Fread( fh, 12, hdr ) == 12 )
+			if( !memcmp( hdr, "RIFF", 4 ) && !memcmp( hdr + 8, "WAVE", 4 ) ) ok = TRUE;
+		Fclose( fh );
+	}
+	return ok;
+}
+
+// Loads the WAV into samp. Returns TRUE if handled (even on error, after alerting).
+static short
+import_wav( SD_HEADER *samp, char *file )
+{
+	short fh, have_fmt = FALSE, chans = 0, bits = 0, tag = 0, fb, i;
+	unsigned long rate = 0, csize, dsize = 0, frames, done = 0, left, want, got;
+	unsigned char ch[ 8 ], fmt[ 16 ];
+	short *out;
+	unsigned char *q;
+	long n;
+
+	graf_mouse( HOURGLASS, 0L );
+	if( ( fh = Fopen( file, 0 ) ) < 0 ) {
+		graf_mouse( ARROW, 0L );
+		form_alert( 1, "[0][Error opening file for reading][ OK ]" );
+		return TRUE;
+	}
+	Fseek( 12L, fh, 0 );									// skip RIFF header
+
+	while( Fread( fh, 8, ch ) == 8 ) {						// walk the chunks
+		csize = LE32( ch + 4 );
+		if( !memcmp( ch, "fmt ", 4 ) && csize >= 16 ) {
+			if( Fread( fh, 16, fmt ) != 16 ) break;
+			tag = LE16( fmt );
+			chans = LE16( fmt + 2 );
+			rate = LE32( fmt + 4 );
+			bits = LE16( fmt + 14 );
+			have_fmt = TRUE;
+			Fseek( (long)( csize - 16 + ( csize & 1 ) ), fh, 1 );
+		}
+		else if( !memcmp( ch, "data", 4 ) ) {
+			dsize = csize;
+			break;
+		}
+		else
+			Fseek( (long)( csize + ( csize & 1 ) ), fh, 1 );
+	}
+
+	graf_mouse( ARROW, 0L );
+	if( !have_fmt || !dsize ) {
+		Fclose( fh );
+		form_alert( 1, "[0][WAV file has no usable|fmt/data chunk][ Cancel ]" );
+		return TRUE;
+	}
+	// 1 = PCM, 0xFFFE = WAVE_FORMAT_EXTENSIBLE (assume PCM)
+	if( ( tag != 1 && tag != 0xFFFE ) || chans < 1 || ( bits != 8 && bits != 16 && bits != 24 ) || !rate ) {
+		Fclose( fh );
+		form_alert( 1, "[0][Unsupported WAV format.|Need 8/16/24-bit PCM][ Cancel ]" );
+		return TRUE;
+	}
+
+	fb = ( bits / 8 ) * chans;								// bytes per frame
+	frames = dsize / fb;
+	if( !frames ) {
+		Fclose( fh );
+		form_alert( 1, "[0][WAV file contains no audio][ Cancel ]" );
+		return TRUE;
+	}
+
+	graf_mouse( HOURGLASS, 0L );
+	if( !( out = (short *)calloc( frames, sizeof(short) ) ) ) {
+		Fclose( fh );
+		graf_mouse( ARROW, 0L );
+		form_alert( 1, ALERT_MEMORY );
+		return TRUE;
+	}
+
+	left = frames;											// frames still wanted
+	while( left ) {
+		want = ( sizeof( wav_buf ) / fb );					// whole frames per read
+		if( want > left ) want = left;
+		n = Fread( fh, want * fb, wav_buf );
+		if( n <= 0 ) break;
+		got = (unsigned long)n / fb;						// whole frames actually read
+		if( !got ) break;
+		for( i = 0, q = wav_buf; i < got; i++, q += fb ) {
+			if( bits == 8 )       out[ done ] = (short)( ( (short)q[ 0 ] - 128 ) << 8 );
+			else if( bits == 16 ) out[ done ] = (short)LE16( q );
+			else                  out[ done ] = (short)LE16( q + 1 );	// 24-bit: top 16 bits
+			done++;
+		}
+		left -= got;
+	}
+	Fclose( fh );
+
+	if( !done ) {
+		free( out );
+		graf_mouse( ARROW, 0L );
+		form_alert( 1, "[0][Error reading WAV data][ OK ]" );
+		return TRUE;
+	}
+
+	samp->FirstSamp  = out;
+	samp->SampLength = done;
+	samp->SampRate   = rate;
+	samp->SampPeriod = 1000000000L / rate;
+	reset_view_params( samp );
+
+	graf_mouse( ARROW, 0L );
+	if( chans > 1 )
+		form_alert( 1, "[1][Multi-channel WAV:|imported LEFT channel only][ OK ]" );
+	return TRUE;
+}
+
 //******** SDS offset = 360, period at 20 ******
 
 short
@@ -132,6 +263,13 @@ import_raw( SD_HEADER *samp )
 	if( !new_sample( samp, PROMPT ) ) return FALSE;
 
 	if( !hndl_fsel( raw_path, raw_file, raw_suffix, "Select ANY file to Load..." ) ) return FALSE;
+
+	// native WAV support: a RIFF/WAVE file bypasses the raw-import dialog
+	if( is_wav_file( raw_file ) ) {
+		import_wav( samp, raw_file );
+		force_complete_redraw();
+		return TRUE;
+	}
 
 	Fsetdta(&info);
 	Fsfirst(raw_file,0);
