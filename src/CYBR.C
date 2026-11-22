@@ -205,6 +205,7 @@ mode_1( void )
 						case MN_PASTE_BUF :
 							smp_no = msg[4] - MN_SMPL1;
 							t = &s[ smp_no ];
+							u = &us[ smp_no ];				// each sample has its own Undo
 							force_complete_redraw();
 							break;
 						case MN_SAMP_RATE :

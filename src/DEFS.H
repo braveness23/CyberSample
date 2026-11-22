@@ -107,8 +107,7 @@ typedef struct {
 #define FIRST_SMPL 0
 #define LAST_SMPL 7
 #define PASTE_BUF 8
-#define UNDO_BUF 9
-#define NUM_SMPL 10
+#define NUM_SMPL 9				// slots 1-8 plus the paste buffer; each has its own undo state in us[]
 
 
 typedef struct{
@@ -275,7 +274,7 @@ short timeline_format = TOG_SAMP;
 short loop_markers = 1;
 short edit_flag = 0, sample_flag = 0, paste_flag = 0, undo_flag = 0;
 short smp_no = 0;
-SD_HEADER s[NUM_SMPL], *t, *p, *u;
+SD_HEADER s[NUM_SMPL], us[NUM_SMPL], *t, *p, *u;	// u = &us[smp_no]: undo state of the current slot
 OBJECT *disp;
 WINDOW g = { -1, MOVER|NAME|CLOSER|FULLER|SIZER, "CyberSample v.160", "", NULL };
 GRECT desk;
@@ -330,7 +329,7 @@ extern short timeline_format;
 extern short loop_markers;
 extern short edit_flag, sample_flag, paste_flag, undo_flag;
 extern short smp_no;
-extern SD_HEADER s[NUM_SMPL], *t, *p, *u;
+extern SD_HEADER s[NUM_SMPL], us[NUM_SMPL], *t, *p, *u;
 extern OBJECT *disp;
 extern WINDOW g;
 extern GRECT desk;

@@ -75,6 +75,9 @@ gate_filter( short *data, long num, double thresh, double attack_samp, double de
 
 /* DSP-END */
 
+/* Set by an edit that asks for a follow-up Normalize, so that Normalize joins the same Undo step. */
+static short undo_chain = FALSE;
+
 void
 edit_amplitude( register SD_HEADER *samp, register short arg1, register short arg2 )
 {
@@ -87,6 +90,9 @@ edit_amplitude( register SD_HEADER *samp, register short arg1, register short ar
 		form_alert( 1, ALERT_NOEDIT );
 		return;
 	}
+
+	if( arg1 == EA_NORMALIZE && undo_chain ) undo_chain = FALSE;	/* follow-up to the previous edit: same Undo step */
+	else if( !undo_save( samp ) ) return;
 
 	graf_mouse( HOURGLASS, 0L );
 
@@ -158,6 +164,7 @@ hndl_fade_in_out( register SD_HEADER *samp )
 	func = find_selected_radio( FADE, FADE_FUNC_PRNT );
 	type = find_selected_radio( FADE, FADE_TYPE_PRNT );
 
+	if( !undo_save( samp ) ) return;
 	graf_mouse( HOURGLASS, 0L );
 
 	if( func == FADE_OUT && type == FADE_LINEAR ) {
@@ -229,6 +236,7 @@ try_again:
 		resolution = 16;
 		goto try_again;
 	}
+	if( !undo_save( s ) ) return;
 	graf_mouse( HOURGLASS, 0L );
 	while( num-- ) {
 		*S_data >>= 16 - resolution;
@@ -237,7 +245,7 @@ try_again:
 	}
 	graf_mouse( ARROW, 0L );
 	force_complete_redraw();
-	if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
+	if( normalize ) { undo_chain = TRUE; force_menu_event( MN_DSP, MN_NORMALIZE ); }
 }
 
 void
@@ -255,6 +263,7 @@ hndl_smoothing( SD_HEADER *s )
 	}
 
 	type = form_alert( 2, "[2][ Smooth Amount ][Light|Med|Heavy]" );
+	if( !undo_save( s ) ) return;
 
 	if( nd = (short *)malloc( length * sizeof(short) ) ) {
 		graf_mouse( HOURGLASS, 0L );
@@ -317,6 +326,7 @@ try_again:
 		goto try_again;
 	}
 
+	if( !undo_save( s ) ) return;
 	graf_mouse( HOURGLASS, 0L );
 	while( num-- ) {
 		if( abs( *S_data ) > threshold ) {
@@ -334,7 +344,7 @@ try_again:
 	}
 	graf_mouse( ARROW, 0L );
 	force_complete_redraw();
-	if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
+	if( normalize ) { undo_chain = TRUE; force_menu_event( MN_DSP, MN_NORMALIZE ); }
 }
 
 void
@@ -372,6 +382,7 @@ try_again:
 		goto try_again;
 	}
 
+	if( !undo_save( s ) ) return;
 	graf_mouse( HOURGLASS, 0L );
 
 	gate_filter( edit_address( s ), edit_length( s ),
@@ -428,6 +439,7 @@ try_again:
 	else
 		a = sqrt( 1 - b * b / ( 4 * c ) ) * ( 1 - c );
 
+	if( !undo_save( s ) ) return;
 	if( nd = nd_p = (short *)malloc( num * sizeof(short) ) ) {
 		graf_mouse( HOURGLASS, 0L );
 
@@ -442,7 +454,7 @@ try_again:
 		free( nd );
 		graf_mouse( ARROW, 0L );
 		force_complete_redraw();
-		if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
+		if( normalize ) { undo_chain = TRUE; force_menu_event( MN_DSP, MN_NORMALIZE ); }
 	}
 	else form_alert( 1, ALERT_MEMORY );
 }
@@ -481,11 +493,12 @@ try_again:
 		goto try_again;
 	}
 
+	if( !undo_save( s ) ) return;
 	graf_mouse( HOURGLASS, 0L );
 	onepole_filter( edit_address( s ), edit_length( s ), (double)c_freq, (double)s->SampRate, !type );
 	graf_mouse( ARROW, 0L );
 	force_complete_redraw();
-	if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
+	if( normalize ) { undo_chain = TRUE; force_menu_event( MN_DSP, MN_NORMALIZE ); }
 }
 
 void
@@ -530,6 +543,7 @@ try_again:
 			form_alert( 1, "[1][Result would be too short][OK]" );
 			return;
 		}
+		if( !undo_save( s ) ) return;
 
 		if( newdata = (short *)malloc( SIZ(newlength) ) ) {
 			graf_mouse( HOURGLASS, 0L );

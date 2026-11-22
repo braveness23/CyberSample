@@ -3,6 +3,7 @@ void setup_samples(void);
 void cleanup_samples(void);
 short new_sample(SD_HEADER *samp,
                  short warn);
+short undo_save(SD_HEADER *samp);
 void init_sample_parameters(SD_HEADER *samp);
 long samp_per_msec(SD_HEADER *s);
 long samp_per_sec(SD_HEADER *s);

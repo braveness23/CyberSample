@@ -13,10 +13,13 @@ void setup_samples()
 {
 	short x; 
 
-	for( x = FIRST_SMPL; x < NUM_SMPL; x++ ) init_sample_parameters( &s[ x ] );
+	for( x = FIRST_SMPL; x < NUM_SMPL; x++ ) {
+		init_sample_parameters( &s[ x ] );
+		init_sample_parameters( &us[ x ] );
+	}
 	t = &s[ smp_no ];
 	p = &s[ PASTE_BUF ];
-	u = &s[ UNDO_BUF ];
+	u = &us[ smp_no ];
 }
 
 void cleanup_samples()
@@ -37,9 +40,30 @@ new_sample( SD_HEADER *samp, short warn )
 	if( rspnc == 1 ) {
 		if( samp->FirstSamp ) free( samp->FirstSamp );
 		init_sample_parameters( samp );
+		if( samp >= s && samp < s + NUM_SMPL )				// a slot's contents were replaced:
+			new_sample( &us[ samp - s ], NPROMPT );			// its undo state no longer applies
 		return TRUE;
 	}
 	return FALSE;
+}
+
+/* Save the current slot's sample as its single Undo level, before an in-place edit.
+   MN_UNDO swaps the sample with this copy, so Undo also works as Redo.  Returns FALSE
+   only if there isn't enough memory and the user chose to cancel the edit. */
+short
+undo_save( SD_HEADER *samp )
+{
+	new_sample( u, NPROMPT );							// free the previous undo level
+	*u = *samp;											// header: selection, loop points, view...
+	u->FirstSamp = NULL;
+	if( samp->SampLength > 0 ) {
+		if( !( u->FirstSamp = (short *)malloc( SIZ( samp->SampLength ) ) ) ) {
+			init_sample_parameters( u );
+			return form_alert( 1, "[1][Not enough memory for Undo.|Continue without it?][Continue|Cancel]" ) == 1;
+		}
+		memcpy( u->FirstSamp, samp->FirstSamp, SIZ( samp->SampLength ) );
+	}
+	return TRUE;
 }
 
 void

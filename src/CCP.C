@@ -180,6 +180,7 @@ truncate( SD_HEADER *samp )
 		return;
 	}
 
+	if( !undo_save( samp ) ) return;
 	if( temp_S_data = (short *)malloc( num ) ) {
 
 		graf_mouse( HOURGLASS, 0L );
