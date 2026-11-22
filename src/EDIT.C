@@ -9,6 +9,15 @@
 #include "defs.h"
 #include <math.h>
 
+/* saturate to the 16-bit sample range instead of wrapping around */
+static short
+clip16( double v )
+{
+	if( v > 32767.0 ) return 32767;
+	if( v < -32768.0 ) return -32768;
+	return (short)v;
+}
+
 void
 edit_amplitude( register SD_HEADER *samp, register short arg1, register short arg2 )
 {
@@ -29,13 +38,13 @@ edit_amplitude( register SD_HEADER *samp, register short arg1, register short ar
 			while( num-- ) *S_data++ >>= 1;	
 			break;
 		case EA_UP_6DB :
-			while( num-- ) *S_data++ <<= 1;	
+			while( num-- ) { *S_data = clip16( (double)*S_data * 2.0 ); S_data++; }	
 			break;
 		case EA_ZERO :
 			while( num-- ) *S_data++ = 0;
 			break;
 		case EA_INVERT :
-			while( num-- ) *S_data++ *= -1;
+			while( num-- ) { *S_data = ( *S_data == -32768 ) ? 32767 : -*S_data; S_data++; }
 			break;
 		case EA_NORMALIZE :
 			while( num-- ) arg2 = max( abs( *S_data++ ), arg2 );
@@ -389,7 +398,7 @@ try_again:
 			d = ( a * l - b * out1 ) - c * out2;
 			out2 = out1;
 			out1 = d;
-			*nd_p++ = d;
+			*nd_p++ = clip16( d );
 		}			
 		memcpy( od, nd, num * sizeof(short) );
 		free( nd );
@@ -448,7 +457,7 @@ try_again:
 				if( d > 32767 ) d = 32727;
 				if( d < -32767 )d = -32676;
 				in1 = l;
-				*nd_p++ = d * 65536;
+				*nd_p++ = clip16( d * 65536 );
 			}			
 			out1 = d;
 		}
@@ -460,7 +469,7 @@ try_again:
 				if( d > 32767 ) d = 32727;
 				if( d < -32767 )d = -32676;
 				in1 = l;
-				*nd_p++ = d * 65536;
+				*nd_p++ = clip16( d * 65536 );
 			}			
 		}		
 		memcpy( od, nd, num * sizeof(short) );
