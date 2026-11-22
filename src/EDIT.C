@@ -40,7 +40,7 @@ edit_amplitude( register SD_HEADER *samp, register short arg1, register short ar
 		case EA_NORMALIZE :
 			while( num-- ) arg2 = max( abs( *S_data++ ), arg2 );
 
-			if( arg2 < SHRT_MAX ) {
+			if( arg2 > 0 && arg2 < SHRT_MAX ) {	/* nothing to scale if the selection is silent */
 				ratio = SHRT_MAX / (float)arg2;
 				S_data = &samp->FirstSamp[ samp->EditStart ];
 				num = samp->EditEnd - samp->EditStart;
@@ -243,6 +243,12 @@ try_again:
 	ratio 		= atol( TED_PTEXT(COMP,COMP_RATIO) );
 	release		= atol( TED_PTEXT(COMP,COMP_RELEASE) );
 
+	if( ratio < 1 ) {											/* ratio is a divisor */
+		form_alert( 1, "[1][Minimum ratio is 1][OK]" );
+		ratio = 1;
+		goto try_again;
+	}
+
 	graf_mouse( HOURGLASS, 0L );
 	while( num-- ) {
 		if( abs( *S_data ) > threshold ) {
@@ -283,6 +289,7 @@ hndl_gate( SD_HEADER *s )
 		return;
 	}
 
+try_again:
 	sprintf( TED_PTEXT(GATE,GATE_THRESH), "%d", thresh_percent );
 	sprintf( TED_PTEXT(GATE,GATE_ATTACK), "%d", attack );
 	sprintf( TED_PTEXT(GATE,GATE_DECAY), "%d", decay );
@@ -293,9 +300,18 @@ hndl_gate( SD_HEADER *s )
 	attack  		= atol( TED_PTEXT(GATE,GATE_ATTACK) );
 	decay 			= atol( TED_PTEXT(GATE,GATE_DECAY) );
 
+	if( attack < 1 || decay < 1 ) {								/* attack is a divisor */
+		form_alert( 1, "[1][Attack and decay must|be at least 1 ms][OK]" );
+		if( attack < 1 ) attack = 1;
+		if( decay < 1 ) decay = 1;
+		goto try_again;
+	}
+
 	thresh_value 	= percent_to_sample_value( thresh_percent );
 	attack_limit 	= attack * samp_per_msec( s );
 	decay_limit		= decay * samp_per_msec( s );
+	if( attack_limit < 1 ) attack_limit = 1;					/* rates under 1 kHz round to 0 samples/ms */
+	if( decay_limit < 1 ) decay_limit = 1;
 
 	graf_mouse( HOURGLASS, 0L );
 
