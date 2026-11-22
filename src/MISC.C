@@ -195,8 +195,11 @@ mode_pexec( void )
 	short button;
 	
 	prev_drv = Dgetdrv();						// Store current drive
-	Dgetpath( prev_path, prev_drv );			// Store current path
+	prev_path[0] = 'A' + prev_drv;				// Dgetpath's drive arg is 1-based (0 = default)
+	prev_path[1] = ':';
+	Dgetpath( prev_path + 2, 0 );			// Store current path
 
+	if( pexec_path[ strlen( pexec_path ) - 1 ] != '\\' ) strcat( pexec_path, "\\" );
 	strcat( pexec_path, "*.PRG" );				// Tack suffix on end of pexec path
 
 	fsel_exinput( pexec_path, pexec_file, &button, "Select a Program to Launch" );
@@ -210,7 +213,7 @@ mode_pexec( void )
 	Pexec( 0, pexec_file, command, 0L );		// Do it - add error checking
 
 	Dsetdrv( prev_drv );						// Restore drive to prev. one
-	Dsetpath( prev_path );						// Restore path to prev. one
+	Dsetpath( prev_path + 2 );						// Restore path to prev. one
 
 	return M_MODE_1;							// Tell prg that we want to go back to M_MODE_1
 }
