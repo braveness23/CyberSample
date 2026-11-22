@@ -18,6 +18,63 @@ clip16( double v )
 	return (short)v;
 }
 
+/* DSP-BEGIN (self-contained: also compiled by the host-side tests) */
+
+/* One-pole low-pass filter (-3 dB at fc, 6 dB/octave), or with highpass set its complement
+   (input minus low-pass: ~-3.6 dB at fc, 6 dB/octave).  Works in place and starts "settled" on the first sample so
+   the start of the selection doesn't click. */
+static void
+onepole_filter( short *data, long num, double fc, double fs, short highpass )
+{
+	double a = exp( -2.0 * PI * fc / fs );
+	double x, y;
+	long n;
+
+	if( num < 1 ) return;
+	y = data[ 0 ];
+	for( n = 0; n < num; n++ ) {
+		x = data[ n ];
+		y = ( 1.0 - a ) * x + a * y;
+		data[ n ] = clip16( highpass ? x - y : y );
+	}
+}
+
+/* Noise gate.  The gate opens whenever |sample| >= thresh and stays open for decay_samp
+   samples after the signal last reached the threshold, then closes.  The gain ramps linearly:
+   0 -> 1 over attack_samp samples when opening, 1 -> 0 over decay_samp samples when closing,
+   so it never amplifies (gain stays within [0,1]).  Works in place. */
+static void
+gate_filter( short *data, long num, double thresh, double attack_samp, double decay_samp )
+{
+	double gain, step_up, step_down, mag;
+	long hold = 0, hold_len, n;
+
+	if( num < 1 ) return;
+	if( attack_samp < 1.0 ) attack_samp = 1.0;
+	if( decay_samp < 1.0 ) decay_samp = 1.0;
+	step_up = 1.0 / attack_samp;
+	step_down = 1.0 / decay_samp;
+	hold_len = (long)decay_samp;
+	gain = ( ( data[ 0 ] < 0 ? -(double)data[ 0 ] : (double)data[ 0 ] ) >= thresh ) ? 1.0 : 0.0;
+
+	for( n = 0; n < num; n++ ) {
+		mag = data[ n ] < 0 ? -(double)data[ n ] : (double)data[ n ];
+		if( mag >= thresh ) hold = hold_len;
+		if( hold > 0 ) {
+			hold--;
+			gain += step_up;
+			if( gain > 1.0 ) gain = 1.0;
+		}
+		else {
+			gain -= step_down;
+			if( gain < 0.0 ) gain = 0.0;
+		}
+		data[ n ] = clip16( (double)data[ n ] * gain );
+	}
+}
+
+/* DSP-END */
+
 void
 edit_amplitude( register SD_HEADER *samp, register short arg1, register short arg2 )
 {
@@ -286,15 +343,7 @@ hndl_gate( SD_HEADER *s )
 	static short thresh_percent = 10;
 	static short attack = 1;
 	static short decay = 100;
-	short thresh_value;
-	long attack_count = 0;
-	long attack_limit;
-	long decay_count = 0;
-	long decay_limit;
-	float ratio = 0;
-	register short *S_data = edit_address( s );
-	register long num = edit_length( s );
-		
+
 	if( !edit_flag ) {
 		form_alert( 1, ALERT_NOEDIT );
 		return;
@@ -311,35 +360,24 @@ try_again:
 	attack  		= atol( TED_PTEXT(GATE,GATE_ATTACK) );
 	decay 			= atol( TED_PTEXT(GATE,GATE_DECAY) );
 
-	if( attack < 1 || decay < 1 ) {								/* attack is a divisor */
+	if( thresh_percent < 0 || thresh_percent > 100 ) {
+		form_alert( 1, "[1][Threshold must be|0 to 100 percent][OK]" );
+		thresh_percent = thresh_percent < 0 ? 0 : 100;
+		goto try_again;
+	}
+	if( attack < 1 || decay < 1 ) {
 		form_alert( 1, "[1][Attack and decay must|be at least 1 ms][OK]" );
 		if( attack < 1 ) attack = 1;
 		if( decay < 1 ) decay = 1;
 		goto try_again;
 	}
 
-	thresh_value 	= percent_to_sample_value( thresh_percent );
-	attack_limit 	= attack * samp_per_msec( s );
-	decay_limit		= decay * samp_per_msec( s );
-	if( attack_limit < 1 ) attack_limit = 1;					/* rates under 1 kHz round to 0 samples/ms */
-	if( decay_limit < 1 ) decay_limit = 1;
-
 	graf_mouse( HOURGLASS, 0L );
 
-	while( num-- ) {
-	
-		if( abs( *S_data ) < thresh_value || 
-			attack_count < attack_limit   ||
-			decay_count  > decay_limit ) {
-			ratio = (float) attack_count / attack_limit;
-			*S_data = (short) *S_data * ratio;
-			attack_count++;
-			decay_count++;
-		}
-		if( attack_count >= attack_limit && abs( *S_data ) < thresh_value )
-			attack_count = 0;
-		S_data++;
-	}
+	gate_filter( edit_address( s ), edit_length( s ),
+				 (double)percent_to_sample_value( thresh_percent ),
+				 attack * s->SampRate / 1000.0,
+				 decay * s->SampRate / 1000.0 );
 
 	graf_mouse( ARROW, 0L );
 	force_complete_redraw();
@@ -412,21 +450,18 @@ try_again:
 void
 hndl_highlowpass( SD_HEADER *s, short type )
 {
-	double a, b;
-	double in1, out1;
 	static short c_freq = 1000;
 	static short normalize = 1;
-	short *S_data = edit_address( s );
-	long num = edit_length( s );
-	long done;		
-	short l;
-	short *od = S_data, *nd, *nd_p;
-	double d;
-	
+	long nyquist = s->SampRate / 2;
+
 	deselect_tree( HLP );
 
 	if( !edit_flag ) {
 		form_alert( 1, ALERT_NOEDIT );
+		return;
+	}
+	if( nyquist < 2 ) {
+		form_alert( 1, "[1][Sample rate is too low|to filter][OK]" );
 		return;
 	}
 try_again:
@@ -440,45 +475,17 @@ try_again:
 	normalize 	= is_selected( HLP, HLP_NORM );
 	c_freq 	= atol( TED_PTEXT(HLP,HLP_C_FREQ) );
 
-	a = ( PI * 2.0 * c_freq ) / s->SampRate;
-	b = exp( -a / s->SampRate );
-	in1 = 0.0;
-	out1 = 0.0;
-
-	if( nd = nd_p = (short *)malloc( num * sizeof(short) ) ) {
-		graf_mouse( HOURGLASS, 0L );
-
-		if( !type ) {
-			d = out1;
-			for( done = 0; done < num; done++ ) {
-				l = *S_data++;
-				d = ( b * ( ( d - in1 ) + (double)l ) ) / 65536.0;
-				d *= 0.8;
-				if( d > 32767 ) d = 32727;
-				if( d < -32767 )d = -32676;
-				in1 = l;
-				*nd_p++ = clip16( d * 65536 );
-			}			
-			out1 = d;
-		}
-		else {
-			for( done = 0; done < num; done++ ) {
-				l = *S_data++;
-				d = a * ( 1 / 65536 ) + b * ( in1 / 65536 );
-				d *= 0.8;
-				if( d > 32767 ) d = 32727;
-				if( d < -32767 )d = -32676;
-				in1 = l;
-				*nd_p++ = clip16( d * 65536 );
-			}			
-		}		
-		memcpy( od, nd, num * sizeof(short) );
-		free( nd );
-		graf_mouse( ARROW, 0L );
-		force_complete_redraw();
-		if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
+	if( c_freq < 1 || c_freq >= nyquist ) {
+		form_alert( 1, "[1][Cutoff must be between|1 Hz and half the|sample rate][OK]" );
+		c_freq = (short)( nyquist > 1000 ? 1000 : nyquist / 2 );
+		goto try_again;
 	}
-	else form_alert( 1, ALERT_MEMORY );
+
+	graf_mouse( HOURGLASS, 0L );
+	onepole_filter( edit_address( s ), edit_length( s ), (double)c_freq, (double)s->SampRate, !type );
+	graf_mouse( ARROW, 0L );
+	force_complete_redraw();
+	if( normalize ) force_menu_event( MN_DSP, MN_NORMALIZE );
 }
 
 void

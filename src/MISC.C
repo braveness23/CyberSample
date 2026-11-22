@@ -82,7 +82,7 @@ short
 percent_to_sample_value( /*SD_HEADER *s,*/ short percent )
 {
 
-	return percent * SHRT_MAX / 100;
+	return (short)( ( (long)percent * SHRT_MAX ) / 100 );
 
 }
 
