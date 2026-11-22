@@ -108,6 +108,10 @@ hndl_paste( SD_HEADER *samp )
 
 	paste_mode = find_selected_radio( PASTE, PASTE_OPT_PRNT );
 	times = atoi( TED_PTEXT( PASTE, PASTE_TIMES ) );
+	location = atol( TED_PTEXT( PASTE, PASTE_LOCATION ) );	// the dialog's Location field is honoured now
+	if( location < 0 ) location = 0;
+	if( location > samp->SampLength ) location = samp->SampLength;
+	if( times < 1 ) times = 1;
 
 	switch( paste_mode ) {
 		case PASTE_INSERT :
@@ -122,9 +126,9 @@ hndl_paste( SD_HEADER *samp )
 				short x;
 
 				segaddr[0] = off_addr( u, 0L );
-				seglen[0]  = u->EditStart;
-				segaddr[1] = off_addr( u, u->EditStart );
-				seglen[1]  = u->SampLength - u->EditStart;
+				seglen[0]  = location;
+				segaddr[1] = off_addr( u, location );
+				seglen[1]  = u->SampLength - location;
 							segaddr[2] = off_addr( p, 0L );
 							seglen[2]  = p->SampLength;
 							
