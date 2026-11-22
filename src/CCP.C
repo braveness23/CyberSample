@@ -98,8 +98,8 @@ hndl_paste( SD_HEADER *samp )
 
 	deselect_tree( PASTE );
 
-	sprintf( TED_PTEXT( PASTE, PASTE_BUF_LENGTH ), "%d", sample_length(p) );
-	sprintf( TED_PTEXT( PASTE, PASTE_LOCATION ), "%d", location );
+	sprintf( TED_PTEXT( PASTE, PASTE_BUF_LENGTH ), "%ld", sample_length(p) );
+	sprintf( TED_PTEXT( PASTE, PASTE_LOCATION ), "%ld", location );
 	sprintf( TED_PTEXT( PASTE, PASTE_TIMES ), "%d", times );
 
 	objc_iselect( PASTE, paste_mode, TRUE );

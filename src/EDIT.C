@@ -496,8 +496,8 @@ hndl_rate_conv( SD_HEADER *s )
 	}
 		
 try_again:
-	sprintf( TED_PTEXT(RATE_CONV,RATE_CONV_OLD), "%d", oldrate );
-	sprintf( TED_PTEXT(RATE_CONV,RATE_CONV_NEW), "%d", newrate );
+	sprintf( TED_PTEXT(RATE_CONV,RATE_CONV_OLD), "%ld", oldrate );
+	sprintf( TED_PTEXT(RATE_CONV,RATE_CONV_NEW), "%ld", newrate );
 
 	if( hndl_dial( RATE_CONV, RATE_CONV_NEW ) == RATE_CONV_CANCEL ) return;
 
