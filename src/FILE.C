@@ -14,12 +14,12 @@ open_sd( SD_HEADER *samp, char *file )
 {
 	short fhandle;
 	
-	if( ! new_sample( samp, PROMPT ) ) return FALSE;
-
 	if( !file ) {
 		if( !hndl_fsel( sd_path, sd_file, sd_suffix, "Select .SD file to load..." ) ) return FALSE;
 		file = sd_file;
 	}
+
+	if( ! new_sample( samp, PROMPT ) ) return FALSE;		// only clear the old sample once a file is chosen
 	
 	graf_mouse( HOURGLASS, 0L );
 
@@ -260,12 +260,11 @@ import_raw( SD_HEADER *samp )
 	char *bit12_buff = NULL;
 	long bit12_buff_size = 0;
 
-	if( !new_sample( samp, PROMPT ) ) return FALSE;
-
 	if( !hndl_fsel( raw_path, raw_file, raw_suffix, "Select ANY file to Load..." ) ) return FALSE;
 
 	// native WAV support: a RIFF/WAVE file bypasses the raw-import dialog
 	if( is_wav_file( raw_file ) ) {
+		if( !new_sample( samp, PROMPT ) ) return FALSE;
 		import_wav( samp, raw_file );
 		force_complete_redraw();
 		return TRUE;
@@ -303,6 +302,8 @@ import_raw( SD_HEADER *samp )
 		}
 	}
 	period = 1000000000 / user_rate;
+
+	if( !new_sample( samp, PROMPT ) ) return FALSE;		// dialog confirmed: now it's safe to clear the old sample
 
 	graf_mouse( HOURGLASS, 0L );
 

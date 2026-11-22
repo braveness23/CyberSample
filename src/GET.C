@@ -19,8 +19,6 @@ void hndl_get( SD_HEADER *samp )
 	STND_HEADER *h = (STND_HEADER *)(midibuf->ibuf + 1 );
 	long count = 0;
 
-	if( ! new_sample( samp, PROMPT ) ) return;
-
 	deselect_tree( GET );
 
 	sprintf( TED_PTEXT(GET,SAMPLE_NO), "%ld", sample );
@@ -44,6 +42,8 @@ void hndl_get( SD_HEADER *samp )
 
 	test_checksum =  is_selected( GET, CHECKSUM );
 	freeze_mouse  =  is_selected( GET, FREEZE_MOUSE );
+
+	if( ! new_sample( samp, PROMPT ) ) return;			// dialog confirmed: now it's safe to clear the old sample
 
 	FLUSH_MIDI_BUFFER;
 	req_data( device, sample );
