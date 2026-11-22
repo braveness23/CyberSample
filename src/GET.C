@@ -50,8 +50,11 @@ void hndl_get( SD_HEADER *samp )
 	Wait( device,0 );
 	while( midibuf->ibuftl < sizeof(STND_HEADER) ) if( count++ > 300000 ) return;
 	if(( h->sysex == 0xf0 ) && ( h->id_no == 0x7e ) && ( h->sub_id == 0x01 ) && ( h->eox == 0xf7 )) {
-		extract_stnd_parameters( h, samp );
-		if( samp->FirstSamp = (short *) malloc( samp->SampLength * sizeof(short) ) ) {
+		if( ! extract_stnd_parameters( h, samp ) ) {
+			form_alert( 1, "[1][Sample Header Not Valid...][Abort]" );
+			new_sample( samp, NPROMPT );
+		}
+		else if( samp->FirstSamp = (short *) malloc( samp->SampLength * sizeof(short) ) ) {
  
 			graf_mouse( HOURGLASS, 0L );
 			if( freeze_mouse ) mouse_control( TRUE );
@@ -149,11 +152,12 @@ receive_stnd_data( SD_HEADER *samp, register short spp )
 * Convert the STND_HEADER data into SD_HEADER parameters
 *******************************************************************/
 
-void extract_stnd_parameters( STND_HEADER *temp, SD_HEADER *samp )
+short extract_stnd_parameters( STND_HEADER *temp, SD_HEADER *samp )
 {
 	samp->SampPeriod	= 	( (long)temp->s_rate_h  	<< 14 	) + 
 				  			( (long)temp->s_rate_m  	<<  7	) +
 				  			( (long)temp->s_rate_l 				);
+	if( samp->SampPeriod < 1 ) return FALSE;		// would divide by zero
 	samp->SampRate		=	1000000000 / samp->SampPeriod;
 	samp->SampLength 	=	( (long)temp->s_length_h 	<< 14	) +
 				  			( (long)temp->s_length_m 	<<  7	) +
@@ -178,6 +182,7 @@ void extract_stnd_parameters( STND_HEADER *temp, SD_HEADER *samp )
 			break;
 	}
 
+	return samp->SampLength > 0;						// an empty dump is not usable either
 }
 
 void req_data( char d, char s )
@@ -349,6 +354,7 @@ pack_header( STND_HEADER *h, SD_HEADER *samp )
 	h->channel = device;
 	h->s_no_l = sample;
 	h->s_format = 12;
+	if( samp->SampRate < 1 ) samp->SampRate = 44100;		// avoid dividing by zero below
 	samp->SampPeriod = 1000000000 / samp->SampRate;
 	h->s_rate_l = 		(char)( ( samp->SampPeriod 		 )	& 0x7f );
 	h->s_rate_m = 		(char)( ( samp->SampPeriod >> 7  ) 	& 0x7f );

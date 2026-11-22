@@ -2,7 +2,7 @@
 void hndl_get(SD_HEADER *samp);
 short receive_stnd_data(SD_HEADER *samp,
                         register short spp);
-void extract_stnd_parameters(STND_HEADER *temp,
+short extract_stnd_parameters(STND_HEADER *temp,
                              SD_HEADER *samp);
 void req_data(unsigned char d,
               unsigned char s);
