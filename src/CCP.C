@@ -149,7 +149,7 @@ hndl_paste( SD_HEADER *samp )
 				memcpy( off_addr( samp, 0L ), off_addr( u, 0L ),
 					SIZ( sample_length( u ) ) );
 				memcpy( off_addr( samp, location ), off_addr( p, 0L ), 
-					min( SIZ( sample_length(p) ), SIZ(( s->SampLength - s->EditStart )) ) );
+					min( SIZ( sample_length(p) ), SIZ(( samp->SampLength - location )) ) );
 			}
 			else {
 				form_alert( 1, ALERT_MEMORY );
