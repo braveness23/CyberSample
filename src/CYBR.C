@@ -467,8 +467,8 @@ enable_check_menu( void )
 	}
 	menu_icheck( CYBMENU, MN_SMPL1 + smp_no, TRUE );	// 'check' the current sample number
 
-	edit_flag 	= edit_length(t) 	? TRUE : FALSE;
 	sample_flag = sample_length(t) 	? TRUE : FALSE;
+	edit_flag 	= ( sample_flag && edit_length(t) ) ? TRUE : FALSE;	/* a selection only counts when a sample is loaded */
 	paste_flag 	= sample_length(p) 	? TRUE : FALSE;
 	undo_flag 	= sample_length(u) 	? TRUE : FALSE;
 

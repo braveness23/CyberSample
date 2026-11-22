@@ -413,6 +413,7 @@ wait_for_button_up( void )
 void
 EditEnd_constrain( SD_HEADER *samp )
 {
+	if( samp->SampLength < 1 ) { reset_edit_params( samp ); return; }	/* no sample: nothing to select */
 	if( samp->EditEnd <= 0 ) samp->EditEnd = 1;
 	if( samp->EditEnd <= samp->EditStart ) samp->EditStart = samp->EditEnd - 1;
 	if( samp->EditEnd >  samp->SampLength ) samp->EditEnd = samp->SampLength;
@@ -421,6 +422,7 @@ EditEnd_constrain( SD_HEADER *samp )
 void
 EditStart_constrain( SD_HEADER *samp )
 {
+	if( samp->SampLength < 1 ) { reset_edit_params( samp ); return; }	/* no sample: nothing to select */
 	if( samp->EditStart >= samp->SampLength ) samp->EditStart = samp->SampLength - 1;
 	if( samp->EditStart >= samp->EditEnd ) samp->EditEnd = samp->EditStart + 1;
 }
@@ -428,6 +430,7 @@ EditStart_constrain( SD_HEADER *samp )
 void
 Loop1Start_constrain( SD_HEADER *samp )
 {
+	if( samp->SampLength < 1 ) { reset_loop1_params( samp ); return; }	/* no sample: no loop */
 	if( samp->Loop1Start >= samp->SampLength ) samp->Loop1Start = samp->SampLength - 1;
 	if( samp->Loop1Start >= samp->Loop1End ) samp->Loop1End = samp->Loop1Start + 1;
 }
@@ -435,6 +438,7 @@ Loop1Start_constrain( SD_HEADER *samp )
 void
 Loop1End_constrain( SD_HEADER *samp )
 {
+	if( samp->SampLength < 1 ) { reset_loop1_params( samp ); return; }	/* no sample: no loop */
 	if( samp->Loop1End <= 0 ) samp->Loop1End = 1;
 	if( samp->Loop1End <= samp->Loop1Start ) samp->Loop1Start = samp->Loop1End - 1;
 	if( samp->Loop1End >  samp->SampLength ) samp->Loop1End = samp->SampLength;
