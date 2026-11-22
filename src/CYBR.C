@@ -454,6 +454,23 @@ mode_1( void )
 	return mode;
 }
 
+/* Format a number into a menu string without overflowing the resource's storage.
+   The strings in the resource file are only as long as their original text (20-22
+   characters), so a long label plus a 7-digit loop point used to run past the end. If the
+   formatted text doesn't fit, drop the label and show just the number. */
+static void
+set_menu_long( short index, char *fmt, long value )
+{
+	static short cap[ 128 ];					/* storage size of each string, learned on first use */
+	char buf[ 40 ];
+	char *dst = (char *)CYBMENU[ index ].ob_spec;
+
+	if( !cap[ index ] ) cap[ index ] = strlen( dst );
+	sprintf( buf, fmt, value );
+	if( strlen( buf ) > cap[ index ] ) sprintf( buf, "%ld", value );
+	strncpy( dst, buf, cap[ index ] );			/* pads with NULs; dst[cap] stays the original terminator */
+}
+
 void
 enable_check_menu( void )
 {
@@ -502,12 +519,12 @@ enable_check_menu( void )
 	menu_icheck ( CYBMENU, MN_LOOP_OFF,		t->Loop1Type == 0 );
 	menu_icheck ( CYBMENU, MN_LOOP_FWD,		t->Loop1Type == 1 );
 	menu_icheck ( CYBMENU, MN_LOOP_REV,		t->Loop1Type == 2 );
-	sprintf( CYBMENU[MN_LOOP_START].ob_spec, "  Loop Start: %ld", t->Loop1Start );
-	sprintf( CYBMENU[MN_LOOP_END  ].ob_spec, "  Loop End  : %ld", t->Loop1End );
-	sprintf( CYBMENU[MN_EDIT_START].ob_spec,  "  Start:% ld", t->EditStart );
-	sprintf( CYBMENU[MN_EDIT_END  ].ob_spec,  "  End  :% ld", t->EditEnd );
-	sprintf( CYBMENU[MN_SAMP_RATE ].ob_spec,  "  Rate: %ld Hz...", t->SampRate );
-	sprintf( CYBMENU[MN_SAMP_LENGTH].ob_spec, "  Length: %ld", t->SampLength );
+	set_menu_long( MN_LOOP_START,  "  Loop Start: %ld", t->Loop1Start );
+	set_menu_long( MN_LOOP_END,    "  Loop End  : %ld", t->Loop1End );
+	set_menu_long( MN_EDIT_START,  "  Start:% ld", t->EditStart );
+	set_menu_long( MN_EDIT_END,    "  End  :% ld", t->EditEnd );
+	set_menu_long( MN_SAMP_RATE,   "  Rate: %ld Hz...", t->SampRate );
+	set_menu_long( MN_SAMP_LENGTH, "  Length: %ld", t->SampLength );
 
 
 	wind_update( END_UPDATE );	// Return control to AES
