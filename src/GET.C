@@ -293,6 +293,7 @@ transmit_stnd_data( SD_HEADER *samp, short truncate )
 	GRECT r;
 	
 
+	if( truncate && samp->Loop1End <= 0 ) truncate = FALSE;	// no loop set: send the whole sample
 	packets = truncate ? ( samp->Loop1End / 60 ) + 1 : ( samp->SampLength / 60 ) + 1;
 	num = truncate ? samp->Loop1End : samp->SampLength;
 
