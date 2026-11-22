@@ -376,11 +376,11 @@ pack_header( STND_HEADER *h, SD_HEADER *samp )
 			h->l_mode = 0x00;
 			break;
 		case 2 :					// Backward/Forward Loop
-			samp->Loop1Type = 0x01;
+			h->l_mode = 0x01;
 			break;
 		case 0 :					// Loop Off or Other
 		default :
-			samp->Loop1Type = 0x7f;
+			h->l_mode = 0x7f;
 			break;
 	}
 }
