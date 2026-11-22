@@ -23,7 +23,10 @@ _main( int argc, char *argv[] )
 		base->midivec = (void *)midithru;
 		midibuf = Iorec(2);
 		start_drv = Dgetdrv();
-		Dgetpath( start_path, start_drv );
+		/* fix: Dgetpath() drive arg is 1-based (0=default) but Dgetdrv() is 0-based; also keep drive letter in path */
+		start_path[0] = 'A' + start_drv;
+		start_path[1] = ':';
+		Dgetpath( start_path + 2, 0 );
 		strcpy( pexec_path, start_path );
 		strcpy( sd_path, start_path );
 		strcpy( del_path, start_path );
