@@ -21,6 +21,8 @@ write it down here.
 | Emulator smoke | `tests/ui/smoke.sh` | + xdotool, ImageMagick, python3-pil | ~40 s | Boots, window drawn, About dialog pixel-identical to `docs/screenshots/about-dialog.png`. |
 | Emulator undo | `tests/ui/undo_test.sh` | same | ~60 s | Per-slot Undo/Redo, checked pixel-for-pixel. |
 | MIDI loopback | `tests/midi/run_matrix.sh` | same | ~8 min | File > Get / Send against a virtual SDS sampler: header, lengths, packets, checksums, bit-exact samples. See `docs/midi-loopback.md`. |
+| MIDI real-time in a dump | `tests/midi/run_loopback.sh … --rt-splice f8` (and `fe`) | same | ~1 min each | Get/Send with clock/active-sensing bytes inside every served packet (as a merger with a running clock delivers them). |
+| MIDI thru stress | `tests/midi/run_thru_stress.sh` | same | ~75 s | Clock (48 B/s) into MIDI in with Midi Thru on while File > Get is opened and cancelled 6×: no crash, thru echoes every clock outside the dialog and resumes after each Cancel. |
 
 `tests/ui/run_all.sh --prg out/CYBR160.PRG` runs all the emulator tests.
 
@@ -32,6 +34,8 @@ Which test covers which issue:
 | #29 Cut/Copy on the paste buffer | `tests/run.sh` (`ccp_test`) |
 | #14 per-slot Undo | `tests/ui/undo_test.sh` |
 | #7 SDS decode, #27 Send format, #30 packet count, #31 announced length | `tests/midi/run_matrix.sh` |
+| #33 real-time bytes inside an SDS dump | `tests/midi/run_loopback.sh --rt-splice f8` / `fe` |
+| #24 MIDI thru from interrupt context | `tests/midi/run_thru_stress.sh` |
 | #25 `sizeof(SD_HEADER)` check | negative build test (ground rule 3) |
 | About dialog / start-up | `tests/ui/smoke.sh` |
 
@@ -106,6 +110,6 @@ send cannot return 16-bit data).
 4. Update this file and the table above.
 
 ## Not covered yet
-Real MIDI hardware; timing behaviour (#23 loop-count timeouts depend on CPU speed, #24 MIDI-thru handler in interrupt context);
+Real MIDI hardware; real TOS (the emulator tests use EmuTOS); timing behaviour (#23 loop-count timeouts depend on CPU speed);
 the emulator tests in GitHub Actions (they need the commercial Lattice C for the build - the host tests already run there);
 dialog-driven edits (filters, gate, compressor) in the emulator; Cut/Copy on the paste-buffer slot in the emulator (menus needed).

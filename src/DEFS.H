@@ -257,6 +257,8 @@ typedef struct {
 #include "cybrwerk.i"
 
 void midithru( void );
+void midifilter( void );
+void miditerm( void );
 
 #ifdef MAINMODUAL
 
@@ -307,6 +309,7 @@ char scrap_path[200];
 char scrap_file_name[13] = "SCRAP.SD";
 KBDVBASE *base;
 void *midivect;
+void *oldterm;
 short midithru_flag = 1;
 short note_channel[3] = { 0, 0, 0 };
 short note_number[3] =  { 60, 60, 60 };
@@ -354,6 +357,7 @@ extern char scrap_path[200];
 extern char scrap_file_name[13];
 extern KBDVBASE *base;
 extern void *midivect;
+extern void *oldterm;
 extern short midithru_flag;
 extern short note_channel[3];
 extern short note_number[3];
