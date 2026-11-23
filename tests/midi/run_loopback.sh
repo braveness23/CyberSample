@@ -3,20 +3,21 @@
 # SDS sampler (sds_sampler.py) connected to Hatari's --midi-in/--midi-out FIFOs, then checks what came back.
 #
 #   run_loopback.sh --prg out/CYBR160.PRG [--tos etos256us.img] [--serve-bits 16] [--send-format 16] [--trunc 0]
-#                   [--workdir DIR] [--fast false] [--keep]
+#                   [--workdir DIR] [--fast false] [--keep] [--rt-splice f8 [--rt-every 40]]
 #
 #   --serve-bits   SDS format the virtual sampler offers on Get (12 or 16)
 #   --send-format  Format radio button chosen in the Send dialog (12 or 16)
+#   --rt-splice    real-time byte the sampler inserts inside every sysex it serves (MIDI clock/active sensing on the line)
 #   --trunc        1 = leave "Sample Length Truncated at Loop End" ticked (default in the program), 0 = untick it
 # Needs: hatari, Xvfb, xdotool, ImageMagick `import`, python3.  Not run in CI (needs a built .PRG and an emulator).
 # GUI coordinates are for the 640x400 mono screen at its fixed position in a 1024x768 Xvfb.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
-PRG=; TOS=; SERVE=16; FMT=16; TRUNC=1; WORK=; FAST=true; KEEP=0; DISP=95
+PRG=; TOS=; SERVE=16; FMT=16; TRUNC=1; WORK=; FAST=true; KEEP=0; DISP=95; RT=; RTN=40
 while [ $# -gt 0 ]; do case $1 in
   --prg) PRG=$2; shift 2;; --tos) TOS=$2; shift 2;; --serve-bits) SERVE=$2; shift 2;; --send-format) FMT=$2; shift 2;;
   --trunc) TRUNC=$2; shift 2;; --workdir) WORK=$2; shift 2;; --fast) FAST=$2; shift 2;; --keep) KEEP=1; shift;;
-  --display) DISP=$2; shift 2;; *) echo "unknown option $1" >&2; exit 2;; esac; done
+  --display) DISP=$2; shift 2;; --rt-splice) RT=$2; shift 2;; --rt-every) RTN=$2; shift 2;; *) echo "unknown option $1" >&2; exit 2;; esac; done
 [ -f "$PRG" ] || { echo "--prg must be a built CYBR160.PRG" >&2; exit 2; }
 [ -n "$TOS" ] || TOS=$(ls "$HERE"/../../ci/.cache/emutos-256k-1.3/etos256us.img 2>/dev/null || true)
 [ -f "$TOS" ] || { echo "--tos: need a TOS/EmuTOS image (ci/build.sh downloads one into ci/.cache)" >&2; exit 2; }
@@ -29,7 +30,7 @@ export SDL_AUDIODRIVER=dummy
 # one process group for sampler + Xvfb + Hatari so everything can be killed together (never pkill by name)
 setsid bash -c "
   python3 '$HERE/sds_sampler.py' --from-atari '$WORK/from_atari' --to-atari '$WORK/to_atari' --log '$WORK/wire.log' \
-      --result '$WORK/result.json' --bits $SERVE --run-for 150 &
+      --result '$WORK/result.json' --bits $SERVE --run-for 150 ${RT:+--rt-splice $RT --rt-every $RTN} &
   Xvfb :$DISP -screen 0 1024x768x24 >/dev/null 2>&1 &
   sleep 1
   DISPLAY=:$DISP hatari --monitor mono --machine st --tos '$TOS' --harddrive '$WORK/C' --auto 'C:\\CYBR160.PRG' \
