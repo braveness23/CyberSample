@@ -235,6 +235,7 @@ mode_pexec( void )
 	command[0] = strlen( command + 1 ); 		// prepare the command line
 
 	Pexec( 0, pexec_file, command, 0L );		// Do it - add error checking
+	base->midivec = (void *)midithru;			// the child's exit ran our etv_term handler (#24)
 
 	Dsetdrv( prev_drv );						// Restore drive to prev. one
 	Dsetpath( prev_path + 2 );						// Restore path to prev. one

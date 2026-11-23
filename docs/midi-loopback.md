@@ -45,8 +45,17 @@ message it serves, so this is tested without any other equipment:
 tests/midi/run_loopback.sh --prg out/CYBR160.PRG --serve-bits 16 --send-format 16 --trunc 0 --rt-splice f8
 ```
 
-Result on v1.60 (2026-11-22): **FAIL** - the header (21 bytes, nothing spliced at the default spacing) is ACKed, then every
-transmission of packet 0 is NAKed (`F0 7E 00 7E 00 F7`) until the sampler gives up; the same with `fe`. Without
-`--rt-splice` the same run passes. `GET.C` reads packets at fixed offsets in the raw MIDI input buffer and counts bytes
-with no real-time filtering, so any spliced byte shifts the packet and breaks the checksum. The same failure was seen with a
-live sequencer's clock merged in (not just this synthetic splice).
+v1.60 failed it: the header (21 bytes, nothing spliced at the default spacing) was ACKed, then every transmission of
+packet 0 was NAKed (`F0 7E 00 7E 00 F7`) until the sampler gave up; the same with `fe`. `GET.C` reads packets at fixed
+offsets in the raw MIDI input buffer, so any real-time byte shifted the packet and broke the checksum (the same failure was
+seen with a live sequencer's clock merged in). Fixed in #33: during Get and Send the MIDI input vector is a small filter
+(`_midifilter` in `src/MIDI.S`) that drops `F8`-`FF` before they reach the buffer; both splices now PASS.
+
+## MIDI thru under load (`run_thru_stress.sh`)
+
+`tests/midi/clock_feeder.py` streams a 120 BPM clock (48 bytes/s) into the ST and logs every byte echoed back; the script
+opens and cancels File > Get six times meanwhile. v1.60's Midi Thru called the BIOS from the MIDI interrupt (#24): under
+this load the machine either panicked (EmuTOS "Bus Error ... System halted") or thru died for good after the first dialog.
+The thru handler now writes straight to the MIDI ACIA; the test checks for no crash and that every clock is echoed outside
+the dialog, including after each Cancel. The FIFOs are held open by the script before Hatari starts (Hatari blocks opening
+them until the other end exists).

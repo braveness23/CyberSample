@@ -21,6 +21,8 @@ _main( int argc, char *argv[] )
 		base = (KBDVBASE *)Kbdvbase();
 		midivect = (void *)base->midivec;
 		base->midivec = (void *)midithru;
+		oldterm = (void *)Setexc( 0x102, -1L );		/* etv_term: restore midivec if we die (#24) */
+		Setexc( 0x102, (long)miditerm );
 		midibuf = Iorec(2);
 		start_drv = Dgetdrv();
 		/* fix: Dgetpath() drive arg is 1-based (0=default) but Dgetdrv() is 0-based; also keep drive letter in path */
@@ -158,13 +160,13 @@ mode_1( void )
 							delete_file( );
 							break;
 						case MN_GET :
-							base->midivec = midivect;
+							base->midivec = (void *)midifilter;		/* drop real-time bytes during the dump (#33) */
 							hndl_get( t );
 							base->midivec = (void *)midithru;
 							break;
 						case MN_SEND :
 							if( sample_flag ) {
-								base->midivec = midivect;
+								base->midivec = (void *)midifilter;	/* drop real-time bytes during the dump (#33) */
 								hndl_send( t );
 								base->midivec = (void *)midithru;
 							}
