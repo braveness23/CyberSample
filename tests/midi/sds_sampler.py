@@ -79,12 +79,25 @@ def handshake(link, timeout=5):
 def ack(dev, pp): return [0xf0, 0x7e, dev, 0x7f, pp & 0x7f, 0xf7]
 def nak(dev, pp): return [0xf0, 0x7e, dev, 0x7e, pp & 0x7f, 0xf7]
 
+RT_SPLICE = None   # (byte, every): set by --rt-splice / --rt-every
+
+def splice(msg):
+    """Insert a real-time byte (F8 clock, FE active sensing...) every N bytes inside a sysex message, as a MIDI merger
+    or thru box with a running clock does. The MIDI spec allows real-time bytes anywhere, including inside sysex,
+    and a receiver must ignore them there."""
+    if not RT_SPLICE: return msg
+    b, n = RT_SPLICE; out = []
+    for i, x in enumerate(msg):
+        if 0 < i < len(msg) - 1 and i % n == 0: out.append(b)
+        out.append(x)
+    return out
+
 def serve(link, dev, samples, bits, rate):
     """Atari asked for a dump: send header then packets, waiting for ACK after each."""
     nb = bytes_per_word(bits); spp = 120 // nb
     period = 1000000000 // rate
     hdr = [0xf0, 0x7e, dev, 0x01, 0, 0, bits] + le7(period) + le7(len(samples)) + le7(0) + le7(len(samples) - 1) + [0x00, 0xf7]
-    link.send(hdr, "header bits=%d len=%d" % (bits, len(samples)))
+    link.send(splice(hdr), "header bits=%d len=%d" % (bits, len(samples)))
     m = handshake(link)
     link.say("RX", "after header:", m)
     if not m or m[3] != 0x7f: link.say("FAIL no ACK for header"); return False
@@ -97,7 +110,7 @@ def serve(link, dev, samples, bits, rate):
         pkt = [0xf0, 0x7e, dev, 0x02, pp & 0x7f] + data + [0, 0xf7]
         pkt[-2] = checksum(pkt)
         for attempt in range(5):
-            link.send(pkt, "packet %d" % pp)
+            link.send(splice(pkt), "packet %d" % pp)
             m = handshake(link)
             if m and m[3] == 0x7f: break
             link.say("RX", "packet", pp, "got", m)
@@ -142,7 +155,11 @@ def main():
     ap.add_argument("--rate", type=int, default=44100); ap.add_argument("--count", type=int, default=1000)
     ap.add_argument("--log", required=True); ap.add_argument("--result", required=True)
     ap.add_argument("--run-for", type=float, default=120)
+    ap.add_argument("--rt-splice", help="hex real-time byte (e.g. f8) to insert inside every served sysex message")
+    ap.add_argument("--rt-every", type=int, default=40, help="insert it every N bytes (40 ~ a 120 BPM clock at 31250 baud)")
     a = ap.parse_args()
+    global RT_SPLICE
+    if a.rt_splice: RT_SPLICE = (int(a.rt_splice, 16), max(1, a.rt_every))
     link = Link(a.from_atari, a.to_atari, a.log); samples = test_samples(a.count); link.say("sampler up")
     end = time.time() + a.run_for
     while time.time() < end:

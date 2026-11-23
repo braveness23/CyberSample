@@ -30,3 +30,23 @@ work directory if a run fails (`--keep`, `--workdir`). The GUI click coordinates
 
 It found these bugs: #27 (Send ignored the format choice), #30 (one packet too many when the length is a multiple of the packet size)
 and #31 (header announced more words than were sent with "truncate at loop end").
+
+## Real-time bytes inside the dump (`--rt-splice`)
+
+On a real MIDI network the line often carries real-time bytes while a dump is running: a sequencer's clock (`F8`, every
+20.8 ms at 120 BPM) through a merger or thru box, or active sensing (`FE`). The MIDI spec allows them **anywhere, including
+inside a sysex message**, and receivers must ignore them there. A 127-byte SDS packet takes ~40 ms at 31250 baud, so with a
+clock running one or two `F8` land inside every packet.
+
+`--rt-splice f8` (or `fe`) makes the virtual sampler insert that byte every `--rt-every` bytes (default 40) inside each
+message it serves, so this is tested without any other equipment:
+
+```
+tests/midi/run_loopback.sh --prg out/CYBR160.PRG --serve-bits 16 --send-format 16 --trunc 0 --rt-splice f8
+```
+
+Result on v1.60 (2026-11-22): **FAIL** - the header (21 bytes, nothing spliced at the default spacing) is ACKed, then every
+transmission of packet 0 is NAKed (`F0 7E 00 7E 00 F7`) until the sampler gives up; the same with `fe`. Without
+`--rt-splice` the same run passes. `GET.C` reads packets at fixed offsets in the raw MIDI input buffer and counts bytes
+with no real-time filtering, so any spliced byte shifts the packet and breaks the checksum. The same failure was seen with a
+live sequencer's clock merged in (not just this synthetic splice).
